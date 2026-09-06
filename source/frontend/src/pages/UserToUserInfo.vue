@@ -1,7 +1,10 @@
 <template>
   <div style="padding: 24px">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
-      <h2 style="margin: 0">个人信息</h2>
+    <div class="page-header">
+      <div>
+        <h2>个人信息</h2>
+        <p>查看你的会员档案、联系方式与剩余课时。</p>
+      </div>
       <el-button @click="router.push('/user/toUpdateInfo')">编辑个人信息</el-button>
     </div>
 
@@ -15,7 +18,12 @@
         <el-descriptions-item label="身高">{{ member.memberHeight }}</el-descriptions-item>
         <el-descriptions-item label="体重">{{ member.memberWeight }}</el-descriptions-item>
         <el-descriptions-item label="办卡时间">{{ member.cardTime }}</el-descriptions-item>
-        <el-descriptions-item label="剩余课时">{{ member.cardNextClass }}</el-descriptions-item>
+        <el-descriptions-item label="购买课时">{{ member.cardClass }} 课时</el-descriptions-item>
+        <el-descriptions-item label="剩余课时">
+          <el-tag :type="Number(member.cardNextClass || 0) > 0 ? 'success' : 'danger'" effect="light">
+            剩余 {{ member.cardNextClass }} 课时
+          </el-tag>
+        </el-descriptions-item>
       </el-descriptions>
     </el-card>
 
@@ -40,4 +48,28 @@ onMounted(() => {
   load().catch(() => {})
 })
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #0d1b2f;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.page-header p {
+  margin: 6px 0 0;
+  color: #718095;
+  font-size: 14px;
+}
+</style>
 

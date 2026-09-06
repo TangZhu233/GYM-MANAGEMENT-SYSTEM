@@ -14,13 +14,16 @@
                ct.class_level    AS classLevel,
                ct.class_duration AS classDuration,
                ct.max_capacity   AS maxCapacity,
+               ct.total_sessions AS total_sessions,
                ct.class_description AS classDescription,
                ct.price,
                COUNT(cr.record_id) AS enrolledCount,
                CASE
                    WHEN ct.max_capacity IS NULL OR ct.max_capacity = 0 THEN 0
                    ELSE ROUND(COUNT(cr.record_id) * 100.0 / NULLIF(ct.max_capacity, 0), 1)
-               END AS capacityUsage
+               END AS capacityUsage,
+               AVG(cr.rating) AS average_rating,
+               COUNT(cr.rating) AS rating_count
         FROM class_table ct
         LEFT JOIN employee e ON ct.coach_id = e.employee_id
         LEFT JOIN class_record cr ON ct.class_id = cr.class_id
@@ -29,13 +32,19 @@
         ORDER BY ct.class_begin ASC, ct.class_id ASC
     </select>
 
+    <update id="updateTotalSessions">
+        UPDATE class_table
+        SET total_sessions = #{totalSessions}
+        WHERE class_id = #{classId}
+    </update>
+
     <delete id="deleteClassByClassId" parameterType="java.lang.Integer">
         DELETE FROM class_table WHERE class_id = #{classId}
     </delete>
 
     <insert id="insertClass" parameterType="classTable">
-        INSERT INTO class_table (class_id, class_name, class_begin, class_duration, class_level, coach_id, max_capacity, class_description, price)
-        SELECT #{classId}, #{className}, #{classBegin}, #{classDuration}, #{classLevel}, employee_id, #{maxCapacity}, #{classDescription}, #{price}
+        INSERT INTO class_table (class_id, class_name, class_begin, class_duration, class_level, coach_id, max_capacity, total_sessions, class_description, price)
+        SELECT #{classId}, #{className}, #{classBegin}, #{classDuration}, #{classLevel}, employee_id, #{maxCapacity}, #{totalSessions}, #{classDescription}, #{price}
         FROM employee
         WHERE employee_id = #{coachId}
     </insert>
@@ -50,6 +59,7 @@
                ct.class_level    AS classLevel,
                ct.class_duration AS classDuration,
                ct.max_capacity   AS maxCapacity,
+               ct.total_sessions AS total_sessions,
                ct.class_description AS classDescription,
                ct.price
         FROM class_table ct

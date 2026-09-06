@@ -34,23 +34,24 @@ CREATE TABLE `class_table`  (
   `max_capacity` int NULL DEFAULT NULL COMMENT '最大容量',
   `class_description` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '课程描述',
   `price` double NULL DEFAULT NULL COMMENT '价格',
+  `total_sessions` int NOT NULL DEFAULT 1 COMMENT '总课时(节)',
   PRIMARY KEY (`class_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci;
 
 -- ----------------------------
 -- Records of class_table
 -- ----------------------------
-INSERT INTO `class_table` VALUES (1, '增肌', '2026年1月1日 15:00', 60, 1, 101038721, 42, '增肌训练课程', 200);
-INSERT INTO `class_table` VALUES (2, '瑜伽', '2026年1月2日 10:20', 90, 2, 101068283, 20, '瑜伽课程', 150);
-INSERT INTO `class_table` VALUES (3, '减脂', '2026年3月6日 18:00', 90, 2, 101053687, 40, '减脂训练课程', 180);
-INSERT INTO `class_table` VALUES (4, '运动康复', '2026年2月2日 10:00', 45, 3, 101045354, 12, '运动康复课程', 300);
-INSERT INTO `class_table` VALUES (5, '综合格斗', '2026年2月3日 15:00', 60, 2, 101038721, 20, '综合格斗训练', 220);
-INSERT INTO `class_table` VALUES (6, '塑形', '2026年2月3日 15:00', 60, 1, 101068283, 18, '塑形训练课程', 160);
-INSERT INTO `class_table` VALUES (7, '普拉提', '2026年3月1日 17:30', 60, 2, 101053687, 22, '普拉提课程', 200);
-INSERT INTO `class_table` VALUES (8, '爵士舞', '2026年2月22日 09:00', 90, 1, 101045354, 28, '爵士舞课程', 130);
-INSERT INTO `class_table` VALUES (9, '杠铃操', '2026年2月4日 15:00', 60, 2, 101038721, 18, '杠铃操课程', 170);
-INSERT INTO `class_table` VALUES (10, '动感单车', '2026年3月8日 15:00', 45, 1, 101068283, 34, '动感单车课程', 120);
-INSERT INTO `class_table` VALUES (11, '健美操', '2026年2月22日 18:00', 60, 1, 101053687, 20, '健美操课程', 140);
+INSERT INTO `class_table` VALUES (1, '增肌', '2026年1月1日 15:00', 60, 1, 101038721, 42, '增肌训练课程', 200, 1);
+INSERT INTO `class_table` VALUES (2, '瑜伽', '2026年1月2日 10:20', 90, 2, 101068283, 20, '瑜伽课程', 150, 1);
+INSERT INTO `class_table` VALUES (3, '减脂', '2026年3月6日 18:00', 90, 2, 101053687, 40, '减脂训练课程', 180, 1);
+INSERT INTO `class_table` VALUES (4, '运动康复', '2026年2月2日 10:00', 45, 3, 101045354, 12, '运动康复课程', 300, 1);
+INSERT INTO `class_table` VALUES (5, '综合格斗', '2026年2月3日 15:00', 60, 2, 101038721, 20, '综合格斗训练', 220, 1);
+INSERT INTO `class_table` VALUES (6, '塑形', '2026年2月3日 15:00', 60, 1, 101068283, 18, '塑形训练课程', 160, 1);
+INSERT INTO `class_table` VALUES (7, '普拉提', '2026年3月1日 17:30', 60, 2, 101053687, 22, '普拉提课程', 200, 1);
+INSERT INTO `class_table` VALUES (8, '爵士舞', '2026年2月22日 09:00', 90, 1, 101045354, 28, '爵士舞课程', 130, 1);
+INSERT INTO `class_table` VALUES (9, '杠铃操', '2026年2月4日 15:00', 60, 2, 101038721, 18, '杠铃操课程', 170, 1);
+INSERT INTO `class_table` VALUES (10, '动感单车', '2026年3月8日 15:00', 45, 1, 101068283, 34, '动感单车课程', 120, 1);
+INSERT INTO `class_table` VALUES (11, '健美操', '2026年2月22日 18:00', 60, 1, 101053687, 20, '健美操课程', 140, 1);
 
 
 -- ----------------------------

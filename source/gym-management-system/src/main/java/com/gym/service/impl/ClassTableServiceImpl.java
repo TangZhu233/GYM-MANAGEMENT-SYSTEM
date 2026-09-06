@@ -33,6 +33,11 @@ public class ClassTableServiceImpl implements ClassTableService {
     }
 
     @Override
+    public int updateTotalSessions(Integer classId, Integer totalSessions) {
+        return classTableMapper.updateTotalSessions(classId, totalSessions);
+    }
+
+    @Override
     public ClassTable selectByClassId(Integer classId) {
         return classTableMapper.selectByClassId(classId);
     }

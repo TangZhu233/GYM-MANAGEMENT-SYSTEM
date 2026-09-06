@@ -109,8 +109,24 @@ public class ApiClassController {
 
     @PostMapping("/addClass")
     public ResponseEntity<Map<String, Object>> addClass(ClassTable classTable) {
+        if (classTable.getTotalSessions() == null || classTable.getTotalSessions() < 1) {
+            classTable.setTotalSessions(1);
+        }
         classTableService.insertClass(classTable);
         Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/updateClassSessions")
+    public ResponseEntity<Map<String, Object>> updateClassSessions(Integer classId, Integer totalSessions) {
+        Map<String, Object> resp = new HashMap<>();
+        if (classId == null || totalSessions == null || totalSessions < 1) {
+            resp.put("success", false);
+            resp.put("message", "总课时需为不小于 1 的整数");
+            return ResponseEntity.ok(resp);
+        }
+        classTableService.updateTotalSessions(classId, totalSessions);
         resp.put("success", true);
         return ResponseEntity.ok(resp);
     }

@@ -16,6 +16,9 @@ public interface ClassTableService {
     //添加课程
     Boolean insertClass(ClassTable classTable);
 
+    //修改课程总课时(节)
+    int updateTotalSessions(Integer classId, Integer totalSessions);
+
     //根据id查询课表
     ClassTable selectByClassId(Integer classId);
 

@@ -21,6 +21,12 @@ public interface ClassRecordMapper {
 
     ClassRecord selectByRecordId(Integer recordId);
 
+    int updateRating(@Param("recordId") Integer recordId, @Param("rating") Double rating);
+
+    int updateProgress(@Param("recordId") Integer recordId,
+                       @Param("completed") Integer completed,
+                       @Param("status") Integer status);
+
     ClassRecord selectByClassIdAndMemberId(Integer classId, String memberId);
 
     List<ClassRecordVO> selectByClassId(Integer classId);

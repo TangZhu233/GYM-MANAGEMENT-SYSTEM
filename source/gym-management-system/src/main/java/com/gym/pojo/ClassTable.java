@@ -13,8 +13,11 @@ public class ClassTable {
     private Integer classLevel;
     private Integer classDuration;
     private Integer maxCapacity;
+    private Integer totalSessions;
     private String classDescription;
     private Double price;
     private Integer enrolledCount;
     private Double capacityUsage;
+    private Double averageRating;
+    private Integer ratingCount;
 }

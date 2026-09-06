@@ -1,7 +1,10 @@
 <template>
   <div style="padding: 24px">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
-      <h2 style="margin: 0">编辑个人信息</h2>
+    <div class="page-header">
+      <div>
+        <h2>编辑个人信息</h2>
+        <p>维护你的姓名、联系方式与身体数据。</p>
+      </div>
       <el-button @click="router.push('/user/toUserInfo')">返回</el-button>
     </div>
 
@@ -79,4 +82,28 @@ onMounted(() => {
   load().catch(() => {})
 })
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #0d1b2f;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.page-header p {
+  margin: 6px 0 0;
+  color: #718095;
+  font-size: 14px;
+}
+</style>
 

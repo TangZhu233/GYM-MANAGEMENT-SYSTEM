@@ -24,8 +24,9 @@ ui-previews/
 backup-*.sql
 recovery-*.sql
 
-# Claude 本地工作规范（只留本机，不上传）
+# Claude 本地工作文档（只留本机，不上传）
 CLAUDE.md
+PROGRESS.md
 
 # Personal reports and process documents
 *.docx

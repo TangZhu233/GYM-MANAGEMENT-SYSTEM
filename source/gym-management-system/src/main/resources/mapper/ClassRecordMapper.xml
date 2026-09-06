@@ -31,8 +31,8 @@
     </select>
 
     <insert id="insertRecord" parameterType="com.gym.pojo.ClassRecord">
-        INSERT INTO class_record (member_id, class_id)
-        VALUES (#{memberId}, #{classId})
+        INSERT INTO class_record (member_id, class_id, total_sessions, completed_sessions)
+        VALUES (#{memberId}, #{classId}, #{totalSessions}, #{completedSessions})
     </insert>
 
     <select id="selectByMemberId" parameterType="java.lang.String" resultMap="ClassRecordVOMap">
@@ -58,6 +58,19 @@
         JOIN member m ON cr.member_id = m.member_id
         WHERE record_id = #{recordId}
     </select>
+
+    <update id="updateRating">
+        UPDATE class_record
+        SET rating = #{rating}
+        WHERE record_id = #{recordId}
+    </update>
+
+    <update id="updateProgress">
+        UPDATE class_record
+        SET completed_sessions = #{completed},
+            status = #{status}
+        WHERE record_id = #{recordId}
+    </update>
 
     <select id="selectByClassIdAndMemberId" resultType="com.gym.pojo.ClassRecord">
         SELECT cr.record_id, m.member_id, cr.class_id, cr.join_time,

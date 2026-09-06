@@ -87,9 +87,10 @@
         <el-table-column label="价格" width="90">
           <template #default="scope">¥{{ scope.row.price }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" width="250">
           <template #default="scope">
             <el-button size="small" type="primary" plain @click="openRecords(scope.row.classId)">查看报名</el-button>
+            <el-button size="small" type="warning" plain @click="setClassSessions(scope.row)">节数</el-button>
             <el-button size="small" type="danger" @click="delClass(scope.row.classId)">删除</el-button>
           </template>
         </el-table-column>
@@ -211,7 +212,7 @@
 <script setup>
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import api, { postForm } from '../api/client'
 
 const router = useRouter()
@@ -510,6 +511,42 @@ async function delClass(classId) {
   try { await ElMessageBox.confirm('确定要删除该课程吗？', '删除确认', { type: 'warning' }) } catch { return }
   await postForm('/api/class/delClass', { classId })
   await loadClasses()
+}
+
+async function setClassSessions(row) {
+  const current = Number(row.totalSessions || 1)
+  let value
+  try {
+    const res = await ElMessageBox.prompt(
+      `「${row.className}」这门课共几节？`,
+      '设置课程总课时',
+      {
+        inputType: 'number',
+        inputValue: current,
+        inputValidator: (v) => {
+          const n = Number(v)
+          if (!Number.isFinite(n) || n < 1) return '请输入不小于 1 的整数'
+          return true
+        }
+      }
+    )
+    value = res.value
+  } catch { return }
+
+  const total = Number(value)
+  if (!Number.isFinite(total) || total < 1) return
+  try {
+    const resp = await postForm('/api/class/updateClassSessions', { classId: row.classId, totalSessions: total })
+    const data = resp.data || {}
+    if (data.success) {
+      ElMessage.success('已更新该课程总课时')
+      await loadClasses()
+    } else {
+      ElMessage.error(data.message || '更新失败')
+    }
+  } catch (e) {
+    ElMessage.error('更新失败：网络异常，请稍后重试')
+  }
 }
 
 onMounted(() => {

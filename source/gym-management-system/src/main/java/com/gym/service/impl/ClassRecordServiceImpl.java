@@ -21,6 +21,8 @@ public class ClassRecordServiceImpl implements ClassRecordService {
     @Override public List<ClassRecordVO> selectByMemberId(String memberId) { return classRecordMapper.selectByMemberId(memberId); }
     @Override public Boolean deleteByRecordId(Integer recordId) { return classRecordMapper.deleteByRecordId(recordId); }
     @Override public ClassRecord selectByRecordId(Integer recordId) { return classRecordMapper.selectByRecordId(recordId); }
+    @Override public int updateRating(Integer recordId, Double rating) { return classRecordMapper.updateRating(recordId, rating); }
+    @Override public int updateProgress(Integer recordId, Integer completed, Integer status) { return classRecordMapper.updateProgress(recordId, completed, status); }
     @Override public ClassRecord selectByClassIdAndMemberId(Integer classId, String memberId) { return classRecordMapper.selectByClassIdAndMemberId(classId, memberId); }
     @Override public List<ClassRecordVO> selectByClassId(Integer classId) { return classRecordMapper.selectByClassId(classId); }
     @Override public int countByClassId(Integer classId) { return classRecordMapper.countByClassId(classId); }

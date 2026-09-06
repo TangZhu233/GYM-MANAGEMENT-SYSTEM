@@ -163,7 +163,11 @@
 
     <!-- 实验三(1): 课程结课 — 将该课程所有"已报名"批量更新为"已完成" -->
     <update id="finishCourse" parameterType="int">
-        UPDATE class_record SET status = 1 WHERE class_id = #{classId} AND status = 0
+        UPDATE class_record
+        SET status = 1,
+            completed_sessions = total_sessions
+        WHERE class_id = #{classId}
+          AND status = 0
     </update>
 
     <!-- 实验三(2): 课程取消 — 删除该课程全部报名记录 -->

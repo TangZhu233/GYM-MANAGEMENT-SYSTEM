@@ -19,6 +19,9 @@
         <el-form-item label="时长(分钟)">
           <el-input-number v-model="form.classDuration" :min="10" :max="180" :step="5" />
         </el-form-item>
+        <el-form-item label="总课时(节)">
+          <el-input-number v-model="form.totalSessions" :min="1" :max="100" />
+        </el-form-item>
         <el-form-item label="等级">
           <el-select v-model="form.classLevel" placeholder="选择等级">
             <el-option label="入门" :value="1" />
@@ -64,6 +67,7 @@ const form = reactive({
   className: '',
   classBegin: '',
   classDuration: 60,
+  totalSessions: 1,
   classLevel: 1,
   coachId: null,
   price: 200,

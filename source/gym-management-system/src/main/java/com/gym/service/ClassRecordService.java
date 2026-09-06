@@ -12,6 +12,8 @@ public interface ClassRecordService {
     List<ClassRecordVO> selectByMemberId(String memberId);
     Boolean deleteByRecordId(Integer recordId);
     ClassRecord selectByRecordId(Integer recordId);
+    int updateRating(Integer recordId, Double rating);
+    int updateProgress(Integer recordId, Integer completed, Integer status);
     ClassRecord selectByClassIdAndMemberId(Integer classId, String memberId);
     List<ClassRecordVO> selectByClassId(Integer classId);
     int countByClassId(Integer classId);
