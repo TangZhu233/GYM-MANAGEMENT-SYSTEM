@@ -30,7 +30,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="教练">
-          <el-select v-model="form.coachId" placeholder="选择教练">
+          <el-select v-model="form.coachId" clearable placeholder="选择教练（可不选＝待安排）">
             <el-option v-for="emp in coachList" :key="emp.employeeAccount" :label="emp.employeeName" :value="emp.employeeAccount" />
           </el-select>
         </el-form-item>
@@ -77,7 +77,7 @@ const form = reactive({
 
 onMounted(async () => {
   const resp = await api.get('/api/employee/selEmployee')
-  coachList.value = resp.data?.employeeList || []
+  coachList.value = (resp.data?.employeeList || []).filter((e) => e.staff === '健身教练')
 })
 
 async function submit() {

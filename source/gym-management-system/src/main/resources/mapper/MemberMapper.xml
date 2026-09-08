@@ -10,8 +10,8 @@
                member_name,
                gender           AS member_gender,
                age              AS member_age,
-               NULL             AS member_height,
-               NULL             AS member_weight,
+               height          AS member_height,
+               weight          AS member_weight,
                phone            AS member_phone,
                register_date    AS card_time,
                total_class_count AS card_class,
@@ -21,9 +21,9 @@
 
     <insert id="insertMember" parameterType="member">
         INSERT INTO member (member_id, member_password, member_name, gender, age,
-                            phone, register_date, total_class_count, remain_class_count)
+                            height, weight, phone, register_date, total_class_count, remain_class_count)
         VALUES (#{memberAccount}, #{memberPassword}, #{memberName}, #{memberGender}, #{memberAge},
-                #{memberPhone}, #{cardTime}, #{cardClass}, #{cardNextClass})
+                #{memberHeight}, #{memberWeight}, #{memberPhone}, #{cardTime}, #{cardClass}, #{cardNextClass})
     </insert>
 
     <update id="updateMemberByMemberAccount" parameterType="member">
@@ -32,6 +32,8 @@
             member_name       = #{memberName},
             gender            = #{memberGender},
             age               = #{memberAge},
+            height            = #{memberHeight},
+            weight            = #{memberWeight},
             phone             = #{memberPhone},
             total_class_count = #{cardClass},
             remain_class_count = #{cardNextClass}
@@ -44,8 +46,8 @@
                member_name,
                gender           AS member_gender,
                age              AS member_age,
-               NULL             AS member_height,
-               NULL             AS member_weight,
+               height          AS member_height,
+               weight          AS member_weight,
                phone            AS member_phone,
                register_date    AS card_time,
                total_class_count AS card_class,
@@ -70,8 +72,8 @@
                member_name,
                gender           AS member_gender,
                age              AS member_age,
-               NULL             AS member_height,
-               NULL             AS member_weight,
+               height          AS member_height,
+               weight          AS member_weight,
                phone            AS member_phone,
                register_date    AS card_time,
                total_class_count AS card_class,
@@ -86,8 +88,8 @@
                member_name,
                gender           AS member_gender,
                age              AS member_age,
-               NULL             AS member_height,
-               NULL             AS member_weight,
+               height          AS member_height,
+               weight          AS member_weight,
                phone            AS member_phone,
                register_date    AS card_time,
                total_class_count AS card_class,

@@ -22,10 +22,10 @@
         <el-form-item label="联系方式">
           <el-input v-model="form.memberPhone" maxlength="11" show-word-limit placeholder="11位手机号" />
         </el-form-item>
-        <el-form-item label="身高（cm）">
+        <el-form-item label="身高(cm)（选填）">
           <el-input-number v-model="form.memberHeight" :min="50" :max="250" :step="1" />
         </el-form-item>
-        <el-form-item label="体重（kg）">
+        <el-form-item label="体重(kg)（选填）">
           <el-input-number v-model="form.memberWeight" :min="20" :max="300" :step="1" />
         </el-form-item>
         <el-form-item label="购买课时">
@@ -66,8 +66,8 @@ async function submit() {
   if (form.memberAge == null || form.memberAge < 1 || form.memberAge > 100) { ElMessage.error('请输入有效年龄(1-100)！'); return }
   if (!form.memberPhone) { ElMessage.error('请输入联系方式！'); return }
   if (!/^\d{11}$/.test(form.memberPhone)) { ElMessage.error('请输入11位手机号！'); return }
-  if (form.memberHeight == null || form.memberHeight < 50 || form.memberHeight > 250) { ElMessage.error('请输入有效身高(50-250cm)！'); return }
-  if (form.memberWeight == null || form.memberWeight < 20 || form.memberWeight > 300) { ElMessage.error('请输入有效体重(20-300kg)！'); return }
+  if (form.memberHeight != null && (form.memberHeight < 50 || form.memberHeight > 250)) { ElMessage.error('请输入有效身高(50-250cm)！'); return }
+  if (form.memberWeight != null && (form.memberWeight < 20 || form.memberWeight > 300)) { ElMessage.error('请输入有效体重(20-300kg)！'); return }
   if (form.cardClass == null || form.cardClass < 1) { ElMessage.error('请输入有效课时数(>=1)！'); return }
 
   await postForm('/api/member/addMember', {

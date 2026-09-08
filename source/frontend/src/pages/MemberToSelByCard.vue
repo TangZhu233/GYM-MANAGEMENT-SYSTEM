@@ -28,8 +28,12 @@
       <el-table-column prop="memberGender" label="性别" width="90" />
       <el-table-column prop="memberAge" label="年龄" width="80" />
       <el-table-column prop="memberPhone" label="联系方式" width="140" />
-      <el-table-column prop="memberHeight" label="身高" width="90" />
-      <el-table-column prop="memberWeight" label="体重" width="90" />
+      <el-table-column prop="memberHeight" label="身高" width="90">
+        <template #default="{ row }">{{ row.memberHeight ?? '-' }}</template>
+      </el-table-column>
+      <el-table-column prop="memberWeight" label="体重" width="90">
+        <template #default="{ row }">{{ row.memberWeight ?? '-' }}</template>
+      </el-table-column>
       <el-table-column prop="cardClass" label="购买课时" width="100" />
       <el-table-column prop="cardNextClass" label="剩余课时" width="100" />
       <el-table-column label="操作" width="180">

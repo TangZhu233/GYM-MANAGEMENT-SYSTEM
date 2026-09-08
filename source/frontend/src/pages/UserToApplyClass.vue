@@ -47,7 +47,22 @@
           </template>
         </el-table-column>
         <el-table-column prop="classTime" label="时长(分)" width="90" />
-        <el-table-column prop="coach" label="教练" width="110" />
+        <el-table-column label="教练" width="170">
+          <template #default="scope">
+            <template v-if="scope.row.coach">
+              <el-tag
+                v-for="nm in String(scope.row.coach).split(',')"
+                :key="nm"
+                class="coach-tag"
+                size="small"
+                effect="plain"
+              >
+                {{ nm }}
+              </el-tag>
+            </template>
+            <el-tag v-else type="info" size="small" effect="light">待安排</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="价格" width="90">
           <template #default="scope">
             <span class="price">¥{{ scope.row.price }}</span>
@@ -93,6 +108,18 @@
 
       <el-empty v-if="!classList.length" description="暂无课程，去结课后即可报名" />
     </el-card>
+
+    <el-dialog v-model="coachPickVisible" :title="`选择「${coachPickName}」的任课教练`" width="480px">
+      <el-radio-group v-model="coachPickId">
+        <el-radio v-for="c in coachPickList" :key="c.id" :value="c.id" class="coach-radio">
+          {{ c.name }}
+        </el-radio>
+      </el-radio-group>
+      <template #footer>
+        <el-button @click="coachPickVisible = false">取消</el-button>
+        <el-button type="primary" :loading="coachPickSaving" @click="confirmCoachPick">确认报名</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -106,6 +133,12 @@ const router = useRouter()
 const classList = ref<any[]>([])
 const member = ref<any>(null)
 const applyingId = ref<number | null>(null)
+const coachPickVisible = ref(false)
+const coachPickSaving = ref(false)
+const coachPickName = ref('')
+const coachPickClassId = ref<number | null>(null)
+const coachPickId = ref<string>('')
+const coachPickList = ref<{ id: string; name: string }[]>([])
 
 const hasRemain = computed(() => Number(member.value?.cardNextClass || 0) > 0)
 
@@ -113,15 +146,26 @@ function courseSessions(row: any) {
   return Math.max(Number(row?.totalSessions || 1), 1)
 }
 
-// 该课能否报名：卡内剩余课时要 >= 该课总课时
+// 该课程任教教练名单（ids/names，与后端 coachIds / coach 逗号串对应）
+function coachIdsOf(row: any): string[] {
+  return String(row?.coachIds || '').split(',').filter(Boolean)
+}
+
+function coachNamesOf(row: any): string[] {
+  return String(row?.coach || '').split(',').filter(Boolean)
+}
+
+// 该课能否报名：需有任课教练（报名须选一位），且卡内剩余课时 >= 该课总课时
 function canApply(row: any) {
   if (isFull(row)) return false
+  if (!coachIdsOf(row).length) return false
   if (!hasRemain.value) return false
   return Number(member.value?.cardNextClass || 0) >= courseSessions(row)
 }
 
 function applyHint(row: any) {
   if (isFull(row)) return '课程已满，无法报名'
+  if (!coachIdsOf(row).length) return '该课程暂无任课教练，暂不可报名'
   if (!hasRemain.value) return '课时不足，暂无法报名'
   return `该课需 ${courseSessions(row)} 课时，卡内剩余课时不足`
 }
@@ -220,21 +264,46 @@ async function apply(row: any) {
     ElMessage.warning(applyHint(row))
     return
   }
-  if (applyingId.value !== null) return
-  applyingId.value = row.classId
+  const ids = coachIdsOf(row)
+  const names = coachNamesOf(row)
+  // 只有一位教练：直接报名；多位：弹窗请用户选一位
+  if (ids.length === 1) {
+    await doApply(row.classId, ids[0])
+    return
+  }
+  coachPickClassId.value = row.classId
+  coachPickName.value = row.className || ''
+  coachPickList.value = names.map((name, i) => ({ id: ids[i], name }))
+  coachPickId.value = ids[0]
+  coachPickVisible.value = true
+}
+
+async function confirmCoachPick() {
+  if (!coachPickClassId.value || !coachPickId.value) return
+  coachPickSaving.value = true
+  const ok = await doApply(coachPickClassId.value, coachPickId.value)
+  coachPickSaving.value = false
+  if (ok) coachPickVisible.value = false
+}
+
+async function doApply(classId: any, coachId: string): Promise<boolean> {
+  if (applyingId.value !== null) return false
+  applyingId.value = classId
   try {
-    const resp = await postForm('/api/user/applyClass', { classId: row.classId })
+    const resp = await postForm('/api/user/applyClass', { classId, coachId })
     const data: any = resp.data || {}
     if (data.success) {
       ElMessage.success('报名成功')
       await load()
       router.push('/user/toUserClass')
-    } else {
-      ElMessage.error(data.message || '报名失败，请稍后重试')
-      await load()
+      return true
     }
+    ElMessage.error(data.message || '报名失败，请稍后重试')
+    await load()
+    return false
   } catch (e: any) {
     ElMessage.error('报名失败：' + (e?.message || '网络异常，请稍后重试'))
+    return false
   } finally {
     applyingId.value = null
   }
@@ -340,5 +409,14 @@ onMounted(() => { load().catch(() => {}) })
 .price {
   color: #d97706;
   font-weight: 700;
+}
+
+.coach-tag {
+  margin-right: 6px;
+}
+
+.coach-radio {
+  display: block;
+  margin: 0 0 10px;
 }
 </style>

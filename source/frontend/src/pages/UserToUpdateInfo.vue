@@ -31,10 +31,10 @@
         <el-form-item label="联系方式">
           <el-input v-model="member.memberPhone" maxlength="11" show-word-limit />
         </el-form-item>
-        <el-form-item label="身高（cm）">
+        <el-form-item label="身高(cm)（选填）">
           <el-input-number v-model="member.memberHeight" :min="50" :max="250" :step="1" />
         </el-form-item>
-        <el-form-item label="体重（kg）">
+        <el-form-item label="体重(kg)（选填）">
           <el-input-number v-model="member.memberWeight" :min="20" :max="300" :step="1" />
         </el-form-item>
 
@@ -72,8 +72,8 @@ async function submit() {
   if (!member.value.memberName) { ElMessage.error('姓名不能为空！'); return }
   if (member.value.memberAge == null || member.value.memberAge < 1 || member.value.memberAge > 100) { ElMessage.error('年龄需在1-100之间！'); return }
   if (!validatePhone(member.value.memberPhone)) { ElMessage.error('请输入11位手机号！'); return }
-  if (member.value.memberHeight == null || member.value.memberHeight < 50 || member.value.memberHeight > 250) { ElMessage.error('身高需在50-250cm之间！'); return }
-  if (member.value.memberWeight == null || member.value.memberWeight < 20 || member.value.memberWeight > 300) { ElMessage.error('体重需在20-300kg之间！'); return }
+  if (member.value.memberHeight != null && (member.value.memberHeight < 50 || member.value.memberHeight > 250)) { ElMessage.error('身高需在50-250cm之间！'); return }
+  if (member.value.memberWeight != null && (member.value.memberWeight < 20 || member.value.memberWeight > 300)) { ElMessage.error('体重需在20-300kg之间！'); return }
   await postForm('/api/user/updateInfo', member.value)
   router.push('/user/toUserInfo')
 }

@@ -9,6 +9,7 @@ public class ClassRecordVO {
     private String memberId;
     private String memberName;
     private Integer classId;
+    private Integer coachId;
     private String className;
     private String coachName;
     private String classBegin;

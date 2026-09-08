@@ -19,6 +19,17 @@
           <el-form-item label="课程 / 教练">
             <el-input v-model="classFilters.keyword" clearable placeholder="课程名或教练" />
           </el-form-item>
+          <el-form-item label="教练">
+            <el-select v-model="classFilters.coach" clearable placeholder="全部教练">
+              <el-option label="待安排（无教练）" value="__none__" />
+              <el-option
+                v-for="c in coachOptions"
+                :key="c.employeeAccount"
+                :label="c.employeeName"
+                :value="String(c.employeeAccount)"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="报名状态">
             <el-select v-model="classFilters.capacityStatus" clearable placeholder="全部">
               <el-option label="余量充足" value="available" />
@@ -80,16 +91,32 @@
         <el-table-column label="开课时间" width="180">
           <template #default="scope">{{ formatDateTime(scope.row.classBegin) }}</template>
         </el-table-column>
-        <el-table-column prop="coach" label="教练" width="110" />
+        <el-table-column label="教练" width="150">
+          <template #default="scope">
+            <template v-if="scope.row.coach">
+              <el-tag
+                v-for="nm in String(scope.row.coach).split(',')"
+                :key="nm"
+                class="coach-tag"
+                size="small"
+                effect="plain"
+              >
+                {{ nm }}
+              </el-tag>
+            </template>
+            <el-tag v-else type="info" size="small" effect="light">待安排</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="时长" width="90">
           <template #default="scope">{{ scope.row.classTime || scope.row.classDuration }}分钟</template>
         </el-table-column>
         <el-table-column label="价格" width="90">
           <template #default="scope">¥{{ scope.row.price }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="250">
+        <el-table-column label="操作" width="320">
           <template #default="scope">
             <el-button size="small" type="primary" plain @click="openRecords(scope.row.classId)">查看报名</el-button>
+            <el-button size="small" @click="openCoachEditor(scope.row)">改教练</el-button>
             <el-button size="small" type="warning" plain @click="setClassSessions(scope.row)">节数</el-button>
             <el-button size="small" type="danger" @click="delClass(scope.row.classId)">删除</el-button>
           </template>
@@ -124,6 +151,21 @@
           <el-form-item label="会员">
             <el-input v-model="recordFilters.memberKeyword" clearable placeholder="会员ID或姓名" />
           </el-form-item>
+          <el-form-item label="教练">
+            <el-select
+              v-model="recordFilters.coachId"
+              clearable
+              placeholder="全部教练"
+              @change="searchRecords"
+            >
+              <el-option
+                v-for="c in coachOptions"
+                :key="c.employeeAccount"
+                :label="c.employeeName"
+                :value="String(c.employeeAccount)"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="报名状态">
             <el-select v-model="recordFilters.status" clearable placeholder="全部">
               <el-option label="已报名" value="0" />
@@ -149,6 +191,9 @@
       <el-table v-else v-loading="recordsLoading" :data="recordList" class="data-table">
         <el-table-column prop="recordId" label="记录ID" width="90" />
         <el-table-column prop="className" label="课程" min-width="140" />
+        <el-table-column label="教练" min-width="100">
+          <template #default="scope">{{ scope.row.coachName || '-' }}</template>
+        </el-table-column>
         <el-table-column prop="memberId" label="会员ID" min-width="130" />
         <el-table-column prop="memberName" label="会员姓名" min-width="120" />
         <el-table-column label="报名时间" min-width="160">
@@ -181,6 +226,27 @@
         />
       </div>
     </section>
+
+    <el-dialog v-model="coachEditVisible" :title="`设置「${coachEditName}」的任课教练`" width="520px">
+      <el-select
+        v-model="coachEditIds"
+        multiple
+        filterable
+        placeholder="可多选；清空＝该课程暂待安排（无教练）"
+        style="width: 100%"
+      >
+        <el-option
+          v-for="c in coachOptions"
+          :key="c.employeeAccount"
+          :label="c.employeeName"
+          :value="String(c.employeeAccount)"
+        />
+      </el-select>
+      <template #footer>
+        <el-button @click="coachEditVisible = false">取消</el-button>
+        <el-button type="primary" :loading="coachEditSaving" @click="saveCoachEditor">保存</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="detailVisible" :title="detail.cur?.className || '课程详情'" width="620px">
       <template v-if="detail.cur">
@@ -219,9 +285,10 @@ const router = useRouter()
 const route = useRoute()
 const activeTab = ref('list')
 const classList = ref([])
+const coachOptions = ref([])
 const classPage = ref(1)
 const classPageSize = ref(10)
-const classFilters = reactive({ keyword: '', capacityStatus: '', level: '', duration: '' })
+const classFilters = reactive({ keyword: '', coach: '', capacityStatus: '', level: '', duration: '' })
 const recordList = ref([])
 const recordsLoading = ref(false)
 const recordsTouched = ref(false)
@@ -237,6 +304,7 @@ const recordFilters = reactive({
   classId: '',
   className: '',
   memberKeyword: '',
+  coachId: '',
   status: '',
   ratingStatus: '',
   lowRating: '',
@@ -246,22 +314,32 @@ const recordFilters = reactive({
 const detailVisible = ref(false)
 const detail = reactive({ cur: null, equipList: [], enrolled: 0 })
 
+const coachEditVisible = ref(false)
+const coachEditSaving = ref(false)
+const coachEditName = ref('')
+const coachEditClassId = ref(null)
+const coachEditIds = ref([])
+
 const filteredClassList = computed(() => {
   const keyword = classFilters.keyword.trim().toLowerCase()
   return classList.value.filter((item) => {
     const matchesKeyword = !keyword
       || String(item.className || '').toLowerCase().includes(keyword)
       || String(item.coach || '').toLowerCase().includes(keyword)
+    const coachVal = classFilters.coach
+    const coachIdList = String(item.coachIds || '').split(',').filter(Boolean)
+    const matchesCoach = !coachVal
+      || (coachVal === '__none__' ? coachIdList.length === 0 : coachIdList.includes(coachVal))
     const matchesStatus = !classFilters.capacityStatus || courseStatusKey(item) === classFilters.capacityStatus
     const matchesLevel = !classFilters.level || String(item.classLevel || '') === classFilters.level
     const duration = Number(item.classDuration || item.classTime || 0)
     const matchesDuration = !classFilters.duration || duration === Number(classFilters.duration)
-    return matchesKeyword && matchesStatus && matchesLevel && matchesDuration
+    return matchesKeyword && matchesCoach && matchesStatus && matchesLevel && matchesDuration
   })
 })
 
 const hasClassFilters = computed(() =>
-  Boolean(classFilters.keyword || classFilters.capacityStatus || classFilters.level || classFilters.duration)
+  Boolean(classFilters.keyword || classFilters.coach || classFilters.capacityStatus || classFilters.level || classFilters.duration)
 )
 
 const pagedClassList = computed(() => {
@@ -375,6 +453,7 @@ function courseStatusType(course) {
 
 function resetClassFilters() {
   classFilters.keyword = ''
+  classFilters.coach = ''
   classFilters.capacityStatus = ''
   classFilters.level = ''
   classFilters.duration = ''
@@ -412,6 +491,11 @@ async function loadClasses() {
   }
 }
 
+async function loadCoaches() {
+  const resp = await api.get('/api/employee/selEmployee')
+  coachOptions.value = (resp.data?.employeeList || []).filter((e) => e.staff === '健身教练')
+}
+
 async function loadRecords({ includeTotal = true } = {}) {
   recordRequestController?.abort()
   const controller = new AbortController()
@@ -423,6 +507,7 @@ async function loadRecords({ includeTotal = true } = {}) {
       classId: nullableNumber(recordFilters.classId),
       className: recordFilters.className || undefined,
       memberKeyword: recordFilters.memberKeyword || undefined,
+      coachId: recordFilters.coachId ? Number(recordFilters.coachId) : undefined,
       status: nullableNumber(recordFilters.status),
       ratingStatus: recordFilters.ratingStatus || undefined,
       lowRating: recordFilters.ratingStatus ? undefined : nullableNumber(recordFilters.lowRating),
@@ -446,11 +531,10 @@ async function loadRecords({ includeTotal = true } = {}) {
 }
 
 function searchRecords() {
-  if (recordPage.value === 1) {
-    loadRecords().catch(() => {})
-    return
+  if (recordPage.value !== 1) {
+    recordPage.value = 1
   }
-  recordPage.value = 1
+  loadRecords().catch(() => {})
 }
 
 async function showDetail(classId) {
@@ -499,12 +583,43 @@ function resetRecordFilters() {
   recordFilters.classId = ''
   recordFilters.className = ''
   recordFilters.memberKeyword = ''
+  recordFilters.coachId = ''
   recordFilters.status = ''
   recordFilters.ratingStatus = ''
   recordFilters.lowRating = ''
   recordFilters.highRating = ''
   recordPage.value = 1
   loadRecords().catch(() => {})
+}
+
+function openCoachEditor(row) {
+  coachEditClassId.value = row.classId
+  coachEditName.value = row.className || ''
+  coachEditIds.value = String(row.coachIds || '').split(',').filter(Boolean)
+  coachEditVisible.value = true
+}
+
+async function saveCoachEditor() {
+  if (coachEditSaving.value) return
+  coachEditSaving.value = true
+  try {
+    const resp = await postForm('/api/class/updateClassCoaches', {
+      classId: coachEditClassId.value,
+      coachIds: coachEditIds.value.join(',')
+    })
+    const data = resp.data || {}
+    if (data.success === false) {
+      ElMessage.error(data.message || '保存失败')
+      return
+    }
+    ElMessage.success('已更新任课教练')
+    coachEditVisible.value = false
+    await loadClasses()
+  } catch (e) {
+    ElMessage.error('保存失败：网络异常，请稍后重试')
+  } finally {
+    coachEditSaving.value = false
+  }
 }
 
 async function delClass(classId) {
@@ -551,11 +666,12 @@ async function setClassSessions(row) {
 
 onMounted(() => {
   loadClasses().catch(() => {})
+  loadCoaches().catch(() => {})
   applyRecordQuery()
 })
 
 watch(
-  () => [classFilters.keyword, classFilters.capacityStatus, classFilters.level, classFilters.duration, classPageSize.value],
+  () => [classFilters.keyword, classFilters.coach, classFilters.capacityStatus, classFilters.level, classFilters.duration, classPageSize.value],
   () => {
     classPage.value = 1
   }
@@ -659,7 +775,7 @@ p,
 
 .class-filter-form {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) 160px 130px 130px auto;
+  grid-template-columns: minmax(180px, 1.2fr) 150px 150px 110px 100px auto;
   gap: 12px;
   align-items: end;
 }
@@ -686,7 +802,7 @@ p,
 
 .record-form {
   display: grid;
-  grid-template-columns: 120px minmax(150px, 1fr) minmax(150px, 1fr) 130px 130px auto;
+  grid-template-columns: 120px minmax(130px, 1fr) minmax(130px, 1fr) 150px 130px 130px auto;
   gap: 12px;
   align-items: end;
 }
@@ -769,8 +885,9 @@ p,
   font-size: 13px;
 }
 
-.tag {
-  margin-right: 8px;
+.tag,
+.coach-tag {
+  margin-right: 6px;
 }
 
 @media (max-width: 1200px) {

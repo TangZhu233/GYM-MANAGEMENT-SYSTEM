@@ -22,7 +22,9 @@
         <el-table-column label="时间" width="180">
           <template #default="scope">{{ formatDateTime(scope.row.classBegin) }}</template>
         </el-table-column>
-        <el-table-column prop="coachName" label="教练" width="160" />
+        <el-table-column label="教练" width="160">
+          <template #default="scope">{{ scope.row.coachName || '-' }}</template>
+        </el-table-column>
         <el-table-column label="状态" width="90">
           <template #default="scope">
             <el-tag :type="statusType(scope.row.status)">{{ statusText(scope.row.status) }}</el-tag>

@@ -9,7 +9,13 @@
                ct.class_name,
                ct.class_begin,
                ct.class_duration AS class_time,
-               e.employee_name   AS coach,
+               (SELECT GROUP_CONCAT(e2.employee_name ORDER BY e2.employee_id)
+                  FROM class_coach cc2
+                  JOIN employee e2 ON e2.employee_id = cc2.coach_id
+                 WHERE cc2.class_id = ct.class_id) AS coach,
+               (SELECT GROUP_CONCAT(cc2.coach_id ORDER BY cc2.coach_id)
+                  FROM class_coach cc2
+                 WHERE cc2.class_id = ct.class_id) AS coachIds,
                e.employee_id     AS coachId,
                ct.class_level    AS classLevel,
                ct.class_duration AS classDuration,
@@ -28,7 +34,7 @@
         LEFT JOIN employee e ON ct.coach_id = e.employee_id
         LEFT JOIN class_record cr ON ct.class_id = cr.class_id
         GROUP BY ct.class_id, ct.class_name, ct.class_begin, ct.class_duration,
-                 e.employee_name, e.employee_id, ct.class_level, ct.max_capacity, ct.class_description, ct.price
+                 e.employee_id, ct.class_level, ct.max_capacity, ct.class_description, ct.price
         ORDER BY ct.class_begin ASC, ct.class_id ASC
     </select>
 
@@ -38,15 +44,69 @@
         WHERE class_id = #{classId}
     </update>
 
+    <!-- class_coach 任教名单维护：某教练名下课程全量覆盖（改派用） -->
+    <delete id="deleteCoachesByCoach">
+        DELETE FROM class_coach WHERE coach_id = #{employeeAccount}
+    </delete>
+
+    <insert id="insertCoachesForCoach">
+        INSERT IGNORE INTO class_coach (class_id, coach_id) VALUES
+        <foreach collection="classIds" item="cid" separator=",">
+            (#{cid}, #{employeeAccount})
+        </foreach>
+    </insert>
+
+    <!-- 按课程维护任教名单（课程管理里编辑教练用） -->
+    <delete id="deleteClassCoaches">
+        DELETE FROM class_coach WHERE class_id = #{classId}
+    </delete>
+
+    <insert id="insertClassCoaches">
+        INSERT IGNORE INTO class_coach (class_id, coach_id) VALUES
+        <foreach collection="coachIds" item="coach" separator=",">
+            (#{classId}, #{coach})
+        </foreach>
+    </insert>
+
+    <!-- 重算某批课程的主教练（coach_id = 名单中最小的教练；名单空则置 NULL=待安排） -->
+    <update id="recomputePrimaryCoaches">
+        UPDATE class_table ct
+        LEFT JOIN (
+            SELECT cc.class_id AS cid, MIN(cc.coach_id) AS minc
+            FROM class_coach cc
+            GROUP BY cc.class_id
+        ) r ON r.cid = ct.class_id
+        SET ct.coach_id = r.minc
+        WHERE ct.class_id IN
+        <foreach collection="classIds" item="cid" open="(" separator="," close=")">
+            #{cid}
+        </foreach>
+    </update>
+
+    <!-- 解雇守卫：class_coach 任教名单 或 主教练(coach_id) 仍指向该员工的数量 -->
+    <select id="countActiveTeaching" resultType="int">
+        SELECT (SELECT COUNT(*) FROM class_coach cc WHERE cc.coach_id = #{employeeAccount})
+             + (SELECT COUNT(*) FROM class_table ct WHERE ct.coach_id = #{employeeAccount})
+    </select>
+
+    <!-- 某教练任教的课程 id 列表（编辑回显/改派重算用） -->
+    <select id="selectClassIdsByCoach" resultType="int">
+        SELECT class_id FROM class_coach WHERE coach_id = #{employeeAccount}
+    </select>
+
+    <!-- 报名选教练：校验所选教练确在该课程任教名单 -->
+    <select id="isCoachOfClass" resultType="int">
+        SELECT COUNT(*) FROM class_coach
+        WHERE class_id = #{classId} AND coach_id = #{coachId}
+    </select>
+
     <delete id="deleteClassByClassId" parameterType="java.lang.Integer">
         DELETE FROM class_table WHERE class_id = #{classId}
     </delete>
 
     <insert id="insertClass" parameterType="classTable">
         INSERT INTO class_table (class_id, class_name, class_begin, class_duration, class_level, coach_id, max_capacity, total_sessions, class_description, price)
-        SELECT #{classId}, #{className}, #{classBegin}, #{classDuration}, #{classLevel}, employee_id, #{maxCapacity}, #{totalSessions}, #{classDescription}, #{price}
-        FROM employee
-        WHERE employee_id = #{coachId}
+        VALUES (#{classId}, #{className}, #{classBegin}, #{classDuration}, #{classLevel}, #{coachId}, #{maxCapacity}, #{totalSessions}, #{classDescription}, #{price})
     </insert>
 
     <select id="selectByClassId" parameterType="java.lang.Integer" resultType="classTable">
@@ -54,7 +114,13 @@
                ct.class_name,
                ct.class_begin,
                ct.class_duration AS class_time,
-               e.employee_name   AS coach,
+               (SELECT GROUP_CONCAT(e2.employee_name ORDER BY e2.employee_id)
+                  FROM class_coach cc2
+                  JOIN employee e2 ON e2.employee_id = cc2.coach_id
+                 WHERE cc2.class_id = ct.class_id) AS coach,
+               (SELECT GROUP_CONCAT(cc2.coach_id ORDER BY cc2.coach_id)
+                  FROM class_coach cc2
+                 WHERE cc2.class_id = ct.class_id) AS coachIds,
                e.employee_id     AS coachId,
                ct.class_level    AS classLevel,
                ct.class_duration AS classDuration,

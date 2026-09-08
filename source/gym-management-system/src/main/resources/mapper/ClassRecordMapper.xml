@@ -9,6 +9,7 @@
         <result column="member_id" property="memberId"/>
         <result column="member_name" property="memberName"/>
         <result column="class_id" property="classId"/>
+        <result column="coach_id" property="coachId"/>
         <result column="class_name" property="className"/>
         <result column="coach_name" property="coachName"/>
         <result column="class_begin" property="classBegin"/>
@@ -21,30 +22,32 @@
 
     <select id="findAll" resultMap="ClassRecordVOMap">
         SELECT cr.record_id, m.member_id, m.member_name,
-               cr.class_id, ct.class_name, e.employee_name AS coach_name,
-               ct.class_begin, cr.join_time, cr.status,
+               cr.class_id, ct.class_name,
+               csel.employee_name AS coach_name,
+               cr.coach_id, cr.join_time, cr.status,
                cr.total_sessions, cr.completed_sessions, cr.rating
         FROM class_record cr
         JOIN member m ON cr.member_id = m.member_id
         JOIN class_table ct ON cr.class_id = ct.class_id
-        LEFT JOIN employee e ON ct.coach_id = e.employee_id
-    </select>
+        LEFT JOIN employee csel ON cr.coach_id = csel.employee_id
+</select>
 
     <insert id="insertRecord" parameterType="com.gym.pojo.ClassRecord">
-        INSERT INTO class_record (member_id, class_id, total_sessions, completed_sessions)
-        VALUES (#{memberId}, #{classId}, #{totalSessions}, #{completedSessions})
+        INSERT INTO class_record (member_id, class_id, coach_id, total_sessions, completed_sessions)
+        VALUES (#{memberId}, #{classId}, #{coachId}, #{totalSessions}, #{completedSessions})
     </insert>
 
     <select id="selectByMemberId" parameterType="java.lang.String" resultMap="ClassRecordVOMap">
         SELECT cr.record_id, m.member_id, m.member_name,
-               cr.class_id, ct.class_name, e.employee_name AS coach_name,
-               ct.class_begin, cr.join_time, cr.status,
+               cr.class_id, ct.class_name,
+               csel.employee_name AS coach_name,
+               cr.coach_id, cr.join_time, cr.status,
                cr.total_sessions, cr.completed_sessions, cr.rating
         FROM class_record cr
         JOIN member m ON cr.member_id = m.member_id
         JOIN class_table ct ON cr.class_id = ct.class_id
-        LEFT JOIN employee e ON ct.coach_id = e.employee_id
-        WHERE m.member_id = #{memberId}
+        LEFT JOIN employee csel ON cr.coach_id = csel.employee_id
+    WHERE m.member_id = #{memberId}
     </select>
 
     <delete id="deleteByRecordId" parameterType="java.lang.Integer">
@@ -92,14 +95,15 @@
 
     <select id="selectByClassId" parameterType="java.lang.Integer" resultMap="ClassRecordVOMap">
         SELECT cr.record_id, m.member_id, m.member_name,
-               cr.class_id, ct.class_name, e.employee_name AS coach_name,
-               ct.class_begin, cr.join_time, cr.status,
+               cr.class_id, ct.class_name,
+               csel.employee_name AS coach_name,
+               cr.coach_id, cr.join_time, cr.status,
                cr.total_sessions, cr.completed_sessions, cr.rating
         FROM class_record cr
         JOIN member m ON cr.member_id = m.member_id
         JOIN class_table ct ON cr.class_id = ct.class_id
-        LEFT JOIN employee e ON ct.coach_id = e.employee_id
-        WHERE cr.class_id = #{classId}
+        LEFT JOIN employee csel ON cr.coach_id = csel.employee_id
+    WHERE cr.class_id = #{classId}
     </select>
 
     <sql id="RecordSearchWhere">
@@ -115,6 +119,9 @@
                     m.member_id LIKE CONCAT('%', #{memberKeyword}, '%')
                     OR m.member_name LIKE CONCAT('%', #{memberKeyword}, '%')
                 )
+            </if>
+            <if test="coachId != null">
+                AND cr.coach_id = #{coachId}
             </if>
             <if test="status != null">
                 AND cr.status = #{status}
@@ -140,14 +147,15 @@
 
     <select id="searchRecords" resultMap="ClassRecordVOMap">
         SELECT cr.record_id, m.member_id, m.member_name,
-               cr.class_id, ct.class_name, e.employee_name AS coach_name,
-               ct.class_begin, cr.join_time, cr.status,
+               cr.class_id, ct.class_name,
+               csel.employee_name AS coach_name,
+               cr.coach_id, cr.join_time, cr.status,
                cr.total_sessions, cr.completed_sessions, cr.rating
         FROM class_record cr
         JOIN member m ON cr.member_id = m.member_id
         JOIN class_table ct ON cr.class_id = ct.class_id
-        LEFT JOIN employee e ON ct.coach_id = e.employee_id
-        <include refid="RecordSearchWhere"/>
+        LEFT JOIN employee csel ON cr.coach_id = csel.employee_id
+    <include refid="RecordSearchWhere"/>
         ORDER BY cr.join_time DESC, cr.record_id DESC
         LIMIT #{offset}, #{pageSize}
     </select>

@@ -2,9 +2,11 @@ package com.gym.controller;
 
 import com.gym.pojo.ClassRecordVO;
 import com.gym.pojo.ClassTable;
+import com.gym.pojo.Employee;
 import com.gym.pojo.Equipment;
 import com.gym.service.ClassRecordService;
 import com.gym.service.ClassTableService;
+import com.gym.service.EmployeeService;
 import com.gym.service.EquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,10 @@ public class ApiClassController {
     private ClassRecordService classRecordService;
     @Autowired
     private EquipmentService equipmentService;
+    @Autowired
+    private EmployeeService employeeService;
+
+    private static final String ROLE_COACH = "健身教练";
 
     @GetMapping("/selClass")
     public Map<String, Object> selectClass() {
@@ -49,24 +55,60 @@ public class ApiClassController {
     }
 
     @GetMapping("/record/search")
-    public Map<String, Object> searchClassRecord(Integer classId, String className, String memberKeyword, Integer status,
+    public Map<String, Object> searchClassRecord(Integer classId, String className, String memberKeyword, Integer coachId,
+                                                 Integer status,
                                                  String ratingStatus, Double lowRating, Double highRating,
                                                  @RequestParam(defaultValue = "1") int page,
                                                  @RequestParam(defaultValue = "20") int pageSize,
                                                  @RequestParam(defaultValue = "true") boolean includeTotal) {
         List<ClassRecordVO> recordList = classRecordService.searchRecords(
-                classId, className, memberKeyword, status, ratingStatus, lowRating, highRating, page, pageSize
+                classId, className, memberKeyword, coachId, status, ratingStatus, lowRating, highRating, page, pageSize
         );
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
         resp.put("classRecordList", recordList);
         if (includeTotal) {
             int total = classRecordService.countSearchRecords(
-                    classId, className, memberKeyword, status, ratingStatus, lowRating, highRating
+                    classId, className, memberKeyword, coachId, status, ratingStatus, lowRating, highRating
             );
             resp.put("total", total);
         }
         return resp;
+    }
+
+    /** 给某课程设置任教教练名单（可多位，逗号分隔 id；传空=清空为待安排）。 */
+    @Transactional
+    @PostMapping("/updateClassCoaches")
+    public ResponseEntity<Map<String, Object>> updateClassCoaches(Integer classId, String coachIds) {
+        Map<String, Object> resp = new HashMap<>();
+        if (classId == null || classTableService.selectByClassId(classId) == null) {
+            resp.put("success", false);
+            resp.put("message", "课程不存在");
+            return ResponseEntity.ok(resp);
+        }
+        classTableService.deleteClassCoaches(classId);
+        List<Integer> ids = parseCoachIds(coachIds);
+        if (!ids.isEmpty()) {
+            classTableService.insertClassCoaches(classId, ids);
+        }
+        classTableService.recomputePrimaryCoaches(List.of(classId));
+        resp.put("success", true);
+        return ResponseEntity.ok(resp);
+    }
+
+    private static List<Integer> parseCoachIds(String coachIds) {
+        List<Integer> ids = new java.util.ArrayList<>();
+        if (coachIds == null || coachIds.isBlank()) {
+            return ids;
+        }
+        for (String part : coachIds.split(",")) {
+            try {
+                ids.add(Integer.valueOf(part.trim()));
+            } catch (NumberFormatException ignored) {
+                // 忽略非法项
+            }
+        }
+        return ids;
     }
 
     @GetMapping("/analysis")
@@ -109,13 +151,41 @@ public class ApiClassController {
 
     @PostMapping("/addClass")
     public ResponseEntity<Map<String, Object>> addClass(ClassTable classTable) {
+        Map<String, Object> resp = new HashMap<>();
         if (classTable.getTotalSessions() == null || classTable.getTotalSessions() < 1) {
             classTable.setTotalSessions(1);
         }
+        Integer coach = parseSingleCoachId(classTable.getCoachId());
+        if (coach != null && !isActiveCoach(coach)) {
+            resp.put("success", false);
+            resp.put("message", "所选教练不存在或不是健身教练");
+            return ResponseEntity.ok(resp);
+        }
         classTableService.insertClass(classTable);
-        Map<String, Object> resp = new HashMap<>();
+        // 选了教练则同时写入任教名单（可后续在课程管理里再加教练）
+        if (coach != null) {
+            List<Integer> one = List.of(coach);
+            classTableService.insertClassCoaches(classTable.getClassId(), one);
+            classTableService.recomputePrimaryCoaches(one);
+        }
         resp.put("success", true);
         return ResponseEntity.ok(resp);
+    }
+
+    private boolean isActiveCoach(Integer employeeId) {
+        List<Employee> list = employeeService.selectByEmployeeAccount(String.valueOf(employeeId));
+        return list != null && !list.isEmpty() && ROLE_COACH.equals(list.get(0).getStaff());
+    }
+
+    private static Integer parseSingleCoachId(String coachId) {
+        if (coachId == null || coachId.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(coachId.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @PostMapping("/updateClassSessions")

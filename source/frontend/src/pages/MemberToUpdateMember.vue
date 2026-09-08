@@ -28,17 +28,19 @@
         <el-form-item label="联系方式">
           <el-input v-model="member.memberPhone" maxlength="11" show-word-limit />
         </el-form-item>
-        <el-form-item label="身高（cm）">
+        <el-form-item label="身高(cm)（选填）">
           <el-input-number v-model="member.memberHeight" :min="50" :max="250" :step="1" />
         </el-form-item>
-        <el-form-item label="体重（kg）">
+        <el-form-item label="体重(kg)（选填）">
           <el-input-number v-model="member.memberWeight" :min="20" :max="300" :step="1" />
         </el-form-item>
         <el-form-item label="购买课时">
           <el-input-number v-model="member.cardClass" :min="1" :max="999" :step="1" />
+          <span class="field-tip">调大＝加课充值，差额会自动补到「剩余课时」</span>
         </el-form-item>
         <el-form-item label="剩余课时">
           <el-input-number v-model="member.cardNextClass" :min="0" :max="999" :step="1" />
+          <span v-if="remainOver" class="remain-warn">剩余课时不能大于购买课时</span>
         </el-form-item>
 
         <el-form-item>
@@ -52,7 +54,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api, { postForm } from '../api/client'
@@ -60,6 +62,12 @@ import api, { postForm } from '../api/client'
 const route = useRoute()
 const router = useRouter()
 const member = ref(null)
+
+const remainOver = computed(() => {
+  const m = member.value
+  if (!m) return false
+  return m.cardClass != null && m.cardNextClass != null && m.cardNextClass > m.cardClass
+})
 
 async function load() {
   const memberAccount = String(route.query.memberAccount || '')
@@ -70,15 +78,36 @@ async function load() {
   }
 }
 
+// 购买课时调大＝充值加课：差额自动补到剩余课时（剩余仍可单独手改）
+watch(
+  () => member.value?.cardClass,
+  (nv, ov) => {
+    const m = member.value
+    if (m && nv != null && ov != null && nv > ov) {
+      m.cardNextClass = (m.cardNextClass ?? 0) + (nv - ov)
+    }
+  }
+)
+
 async function submit() {
   const m = member.value
   if (!m) return
   if (!m.memberName) { ElMessage.error('姓名不能为空！'); return }
   if (m.memberAge == null || m.memberAge < 1 || m.memberAge > 100) { ElMessage.error('年龄需在1-100之间！'); return }
   if (!/^\d{11}$/.test(String(m.memberPhone || ''))) { ElMessage.error('请输入11位手机号！'); return }
-  if (m.memberHeight == null || m.memberHeight < 50 || m.memberHeight > 250) { ElMessage.error('身高需在50-250cm之间！'); return }
-  if (m.memberWeight == null || m.memberWeight < 20 || m.memberWeight > 300) { ElMessage.error('体重需在20-300kg之间！'); return }
-  await postForm('/api/member/updateMember', member.value)
+  if (m.memberHeight != null && (m.memberHeight < 50 || m.memberHeight > 250)) { ElMessage.error('身高需在50-250cm之间！'); return }
+  if (m.memberWeight != null && (m.memberWeight < 20 || m.memberWeight > 300)) { ElMessage.error('体重需在20-300kg之间！'); return }
+  if (m.cardClass == null || m.cardClass < 1) { ElMessage.error('购买课时需大于等于 1！'); return }
+  if (m.cardNextClass == null || m.cardNextClass < 0) { ElMessage.error('剩余课时不能为负数！'); return }
+  if (m.cardNextClass > m.cardClass) { ElMessage.error('剩余课时不能大于购买课时，请先核对课时数！'); return }
+
+  const resp = await postForm('/api/member/updateMember', member.value)
+  const data = resp.data || {}
+  if (data.success === false) {
+    ElMessage.error(data.message || '保存失败，请重试')
+    return
+  }
+  ElMessage.success('已保存')
   router.push('/member/selMember')
 }
 
@@ -97,5 +126,19 @@ onMounted(() => {
 
 h2 {
   margin: 0;
+}
+
+.field-tip {
+  margin-left: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.remain-warn {
+  margin-left: 12px;
+  font-size: 12px;
+  color: #ef4444;
+  line-height: 1.6;
 }
 </style>

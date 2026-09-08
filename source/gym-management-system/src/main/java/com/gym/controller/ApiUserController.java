@@ -35,30 +35,29 @@ public class ApiUserController {
 
     @GetMapping("/toUserInfo")
     public Map<String, Object> toUserInfo(HttpSession session) {
-        Member member = (Member) session.getAttribute("user");
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("member", member);
+        resp.put("member", latestMemberOf(session));
         return resp;
     }
 
     @GetMapping("/toUpdateInfo")
     public Map<String, Object> toUpdateInfo(HttpSession session) {
-        Member member = (Member) session.getAttribute("user");
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("member", member);
+        resp.put("member", latestMemberOf(session));
         return resp;
     }
 
     @PostMapping("/updateInfo")
     public ResponseEntity<Map<String, Object>> updateUserInformation(HttpSession session, Member member) {
-        Member member1 = (Member) session.getAttribute("user");
-        if (member1 != null && member != null) {
-            member.setMemberAccount(member1.getMemberAccount());
-            member.setCardClass(member1.getCardClass());
-            member.setCardTime(member1.getCardTime());
-            member.setCardNextClass(member1.getCardNextClass());
+        // 卡内课时/办卡时间以数据库最新为准（避免用会话里的旧值覆盖管理员刚充的课时）
+        Member latest = latestMemberOf(session);
+        if (latest != null && member != null) {
+            member.setMemberAccount(latest.getMemberAccount());
+            member.setCardClass(latest.getCardClass());
+            member.setCardTime(latest.getCardTime());
+            member.setCardNextClass(latest.getCardNextClass());
             memberService.updateMemberByMemberAccount(member);
             session.setAttribute("user", member);
         }
@@ -69,7 +68,7 @@ public class ApiUserController {
 
     @GetMapping("/toUserClass")
     public Map<String, Object> toUserClass(HttpSession session) {
-        Member member = (Member) session.getAttribute("user");
+        Member member = latestMemberOf(session);
         String memberAccount = member == null ? null : member.getMemberAccount();
         List<ClassRecordVO> recordList = classRecordService.selectByMemberId(memberAccount);
 
@@ -109,7 +108,7 @@ public class ApiUserController {
 
     @GetMapping("/toApplyClass")
     public Map<String, Object> toUserApplyClass(HttpSession session) {
-        Member member = (Member) session.getAttribute("user");
+        Member member = latestMemberOf(session);
         String memberAccount = member == null ? null : member.getMemberAccount();
         List<ClassTable> classList = classTableService.findAll();
         if (memberAccount != null) {
@@ -130,12 +129,20 @@ public class ApiUserController {
 
     @Transactional
     @PostMapping("/applyClass")
-    public ResponseEntity<Map<String, Object>> userApplyClass(Integer classId, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> userApplyClass(Integer classId, Integer coachId, HttpSession session) {
         ClassTable classTable = classTableService.selectByClassId(classId);
         Member member = (Member) session.getAttribute("user");
 
         if (classTable == null || member == null) {
             return fail("会话已失效或课程不存在");
+        }
+
+        // 报名须从该课程任教教练中选择一位（无教练课程无法报名）
+        if (coachId == null) {
+            return fail("请选择教练后再报名");
+        }
+        if (!classTableService.isCoachOfClass(classId, coachId)) {
+            return fail("所选教练不是该课程任教教练");
         }
 
         String memberId = member.getMemberAccount();
@@ -173,6 +180,7 @@ public class ApiUserController {
         ClassRecord record = new ClassRecord();
         record.setMemberId(memberId);
         record.setClassId(classId);
+        record.setCoachId(coachId);
         record.setTotalSessions(total);
         record.setCompletedSessions(0);
         classRecordService.insertRecord(record);
@@ -247,6 +255,20 @@ public class ApiUserController {
         if (latestMember != null) {
             session.setAttribute("user", latestMember);
         }
+    }
+
+    /** 读取会话会员时按会员号查库返回最新（管理员后台改过课时/资料也能同步看到），并刷新会话缓存。 */
+    private Member latestMemberOf(HttpSession session) {
+        Member cached = (Member) session.getAttribute("user");
+        if (cached == null || cached.getMemberAccount() == null) {
+            return cached;
+        }
+        Member latest = findMember(cached.getMemberAccount());
+        if (latest != null) {
+            session.setAttribute("user", latest);
+            return latest;
+        }
+        return cached;
     }
 
     private static ResponseEntity<Map<String, Object>> success() {

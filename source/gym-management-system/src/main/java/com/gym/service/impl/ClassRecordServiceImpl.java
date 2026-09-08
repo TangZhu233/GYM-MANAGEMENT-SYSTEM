@@ -27,17 +27,17 @@ public class ClassRecordServiceImpl implements ClassRecordService {
     @Override public List<ClassRecordVO> selectByClassId(Integer classId) { return classRecordMapper.selectByClassId(classId); }
     @Override public int countByClassId(Integer classId) { return classRecordMapper.countByClassId(classId); }
     @Override public int countActiveByClassId(Integer classId) { return classRecordMapper.countActiveByClassId(classId); }
-    @Override public List<ClassRecordVO> searchRecords(Integer classId, String className, String memberKeyword, Integer status,
-                                                       String ratingStatus, Double lowRating, Double highRating,
+    @Override public List<ClassRecordVO> searchRecords(Integer classId, String className, String memberKeyword, Integer coachId,
+                                                       Integer status, String ratingStatus, Double lowRating, Double highRating,
                                                        int page, int pageSize) {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), 100);
         int offset = (safePage - 1) * safePageSize;
-        return classRecordMapper.searchRecords(classId, className, memberKeyword, status, ratingStatus, lowRating, highRating, offset, safePageSize);
+        return classRecordMapper.searchRecords(classId, className, memberKeyword, coachId, status, ratingStatus, lowRating, highRating, offset, safePageSize);
     }
-    @Override public int countSearchRecords(Integer classId, String className, String memberKeyword, Integer status,
-                                            String ratingStatus, Double lowRating, Double highRating) {
-        return classRecordMapper.countSearchRecords(classId, className, memberKeyword, status, ratingStatus, lowRating, highRating);
+    @Override public int countSearchRecords(Integer classId, String className, String memberKeyword, Integer coachId,
+                                            Integer status, String ratingStatus, Double lowRating, Double highRating) {
+        return classRecordMapper.countSearchRecords(classId, className, memberKeyword, coachId, status, ratingStatus, lowRating, highRating);
     }
     @Override public List<Map<String, Object>> selectRatingView(Double minRating, String gender, int limit) {
         int safeLimit = Math.min(Math.max(limit, 1), 200);

@@ -66,7 +66,7 @@
 <script setup>
 import { onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import api, { postForm } from '../api/client'
 
 const router = useRouter()
@@ -143,8 +143,18 @@ function edit(employeeAccount) {
 
 async function del(employeeAccount) {
   try { await ElMessageBox.confirm('确定要解雇该员工吗？', '解雇确认', { type: 'warning' }) } catch { return }
-  await postForm('/api/employee/delEmployee', { employeeAccount })
-  await search()
+  try {
+    const resp = await postForm('/api/employee/delEmployee', { employeeAccount })
+    const data = resp.data || {}
+    if (data.success === false) {
+      ElMessage.error(data.message || '解雇失败')
+      return
+    }
+    ElMessage.success('已解雇')
+    await search()
+  } catch (e) {
+    ElMessage.error('解雇失败：网络异常，请稍后重试')
+  }
 }
 
 onMounted(() => {

@@ -10,6 +10,7 @@ public class ClassRecord {
     private Integer recordId;
     private String memberId;
     private Integer classId;
+    private Integer coachId;
     private Date joinTime;
     private Integer status;
     private Integer totalSessions;

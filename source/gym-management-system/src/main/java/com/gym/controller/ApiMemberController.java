@@ -97,10 +97,34 @@ public class ApiMemberController {
 
     @PostMapping("/updateMember")
     public ResponseEntity<Map<String, Object>> updateMember(Member member) {
+        if (member == null || member.getMemberAccount() == null) {
+            return ResponseEntity.ok(buildResp(false, "参数不完整"));
+        }
+
+        // 一致性校验：0 ≤ 剩余课时 ≤ 购买课时（购买增大时由前端把差额自动补到剩余课时）
+        Integer total = member.getCardClass();
+        Integer remain = member.getCardNextClass();
+        if (total == null || total < 1) {
+            return ResponseEntity.ok(buildResp(false, "购买课时需大于等于 1"));
+        }
+        if (remain == null || remain < 0) {
+            return ResponseEntity.ok(buildResp(false, "剩余课时不能为负数"));
+        }
+        if (remain > total) {
+            return ResponseEntity.ok(buildResp(false, "剩余课时不能大于购买课时，请先核对课时数"));
+        }
+
         memberService.updateMemberByMemberAccount(member);
+        return ResponseEntity.ok(buildResp(true, null));
+    }
+
+    private static Map<String, Object> buildResp(boolean success, String message) {
         Map<String, Object> resp = new HashMap<>();
-        resp.put("success", true);
-        return ResponseEntity.ok(resp);
+        resp.put("success", success);
+        if (message != null) {
+            resp.put("message", message);
+        }
+        return resp;
     }
 
     @GetMapping("/toSelByCard")

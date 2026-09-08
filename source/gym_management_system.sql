@@ -62,6 +62,7 @@ CREATE TABLE `class_record`  (
   `record_id` int NOT NULL AUTO_INCREMENT COMMENT '报名记录id',
   `member_id` int NOT NULL COMMENT '会员ID',
   `class_id` int NOT NULL COMMENT '课程ID',
+  `coach_id` int NULL DEFAULT NULL COMMENT '报名所选教练 employee_id',
   `join_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报名时间',
   `status` int NULL DEFAULT 0 COMMENT '0已报名 1已完成 2已取消',
   `total_sessions` int NULL DEFAULT NULL COMMENT '总课时',
@@ -314,6 +315,8 @@ CREATE TABLE `member`  (
   `member_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '会员姓名',
   `gender` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '' COMMENT '性别',
   `age` int NULL DEFAULT NULL COMMENT '年龄',
+  `height` int NULL DEFAULT NULL COMMENT '身高(cm)',
+  `weight` int NULL DEFAULT NULL COMMENT '体重(kg)',
   `phone` varchar(20) NULL DEFAULT NULL COMMENT '电话',
   `register_date` date NULL DEFAULT NULL COMMENT '办卡时间',
   `total_class_count` int NULL DEFAULT NULL COMMENT '购买课时',
@@ -324,66 +327,66 @@ CREATE TABLE `member`  (
 -- ----------------------------
 -- Records of member
 -- ----------------------------
-INSERT INTO `member` VALUES (2026001, '123456', '张三', '女', 24, '19900000004', '2025-06-05', 40, 40);
-INSERT INTO `member` VALUES (2026002, '123456', '李四', '男', 31, '19900000002', '2026-01-01', 50, 50);
-INSERT INTO `member` VALUES (2026003, '123456', '王五', '男', 31, '19900000003', '2026-01-01', 40, 40);
-INSERT INTO `member` VALUES (2026004, '123456', '马六', '女', 23, '19900000001', '2026-01-16', 30, 30);
-INSERT INTO `member` VALUES (2026005, '123456', 'Tom', '男', 24, '19900000006', '2026-02-26', 30, 30);
-INSERT INTO `member` VALUES (2026006, '123456', 'Tylor', '女', 19, '19900000009', '2026-02-27', 30, 30);
-INSERT INTO `member` VALUES (2026007, '123456', 'Jack', '男', 33, '19900000007', '2026-02-27', 30, 30);
-INSERT INTO `member` VALUES (2026008, '123456', 'Mike', '男', 36, '19900000010', '2026-02-28', 30, 30);
-INSERT INTO `member` VALUES (2026009, '123456', 'Emma', '女', 25, '19900000008', '2026-03-01', 50, 50);
-INSERT INTO `member` VALUES (2026010, '123456', 'Ava', '女', 28, '19900000005', '2026-03-02', 30, 30);
-INSERT INTO `member` VALUES (2026011, '123456', 'Chloe', '女', 27, '19900000059', '2026-03-23', 30, 30);
-INSERT INTO `member` VALUES (2026012, '123456', 'Lily', '女', 25, '19900000060', '2026-03-27', 30, 30);
-INSERT INTO `member` VALUES (2026013, '123456', '会员13', '女', 33, '19900000011', '2026-02-14', 40, 40);
-INSERT INTO `member` VALUES (2026014, '123456', '会员14', '男', 34, '19900000012', '2026-03-15', 50, 50);
-INSERT INTO `member` VALUES (2026015, '123456', '会员15', '女', 35, '19900000013', '2026-04-16', 60, 60);
-INSERT INTO `member` VALUES (2026016, '123456', '会员16', '男', 36, '19900000014', '2026-05-17', 30, 30);
-INSERT INTO `member` VALUES (2026017, '123456', '会员17', '女', 37, '19900000015', '2026-06-18', 40, 40);
-INSERT INTO `member` VALUES (2026018, '123456', '会员18', '男', 38, '19900000016', '2026-01-19', 50, 50);
-INSERT INTO `member` VALUES (2026019, '123456', '会员19', '女', 39, '19900000017', '2026-02-20', 60, 60);
-INSERT INTO `member` VALUES (2026020, '123456', '会员20', '男', 40, '19900000018', '2026-03-21', 30, 30);
-INSERT INTO `member` VALUES (2026021, '123456', '会员21', '女', 41, '19900000019', '2026-04-22', 40, 40);
-INSERT INTO `member` VALUES (2026022, '123456', '会员22', '男', 42, '19900000020', '2026-05-23', 50, 50);
-INSERT INTO `member` VALUES (2026023, '123456', '会员23', '女', 43, '19900000021', '2026-06-24', 60, 60);
-INSERT INTO `member` VALUES (2026024, '123456', '会员24', '男', 20, '19900000022', '2026-01-25', 30, 30);
-INSERT INTO `member` VALUES (2026025, '123456', '会员25', '女', 21, '19900000023', '2026-02-26', 40, 40);
-INSERT INTO `member` VALUES (2026026, '123456', '会员26', '男', 22, '19900000024', '2026-03-01', 50, 50);
-INSERT INTO `member` VALUES (2026027, '123456', '会员27', '女', 23, '19900000025', '2026-04-02', 60, 60);
-INSERT INTO `member` VALUES (2026028, '123456', '会员28', '男', 24, '19900000026', '2026-05-03', 30, 30);
-INSERT INTO `member` VALUES (2026029, '123456', '会员29', '女', 25, '19900000027', '2026-06-04', 40, 40);
-INSERT INTO `member` VALUES (2026030, '123456', '会员30', '男', 26, '19900000028', '2026-01-05', 50, 50);
-INSERT INTO `member` VALUES (2026031, '123456', '会员31', '女', 27, '19900000029', '2026-02-06', 60, 60);
-INSERT INTO `member` VALUES (2026032, '123456', '会员32', '男', 28, '19900000030', '2026-03-07', 30, 30);
-INSERT INTO `member` VALUES (2026033, '123456', '会员33', '女', 29, '19900000031', '2026-04-08', 40, 40);
-INSERT INTO `member` VALUES (2026034, '123456', '会员34', '男', 30, '19900000032', '2026-05-09', 50, 50);
-INSERT INTO `member` VALUES (2026035, '123456', '会员35', '女', 31, '19900000033', '2026-06-10', 60, 60);
-INSERT INTO `member` VALUES (2026036, '123456', '会员36', '男', 32, '19900000034', '2026-01-11', 30, 30);
-INSERT INTO `member` VALUES (2026037, '123456', '会员37', '女', 33, '19900000035', '2026-02-12', 40, 40);
-INSERT INTO `member` VALUES (2026038, '123456', '会员38', '男', 34, '19900000036', '2026-03-13', 50, 50);
-INSERT INTO `member` VALUES (2026039, '123456', '会员39', '女', 35, '19900000037', '2026-04-14', 60, 60);
-INSERT INTO `member` VALUES (2026040, '123456', '会员40', '男', 36, '19900000038', '2026-05-15', 30, 30);
-INSERT INTO `member` VALUES (2026041, '123456', '会员41', '女', 37, '19900000039', '2026-06-16', 40, 40);
-INSERT INTO `member` VALUES (2026042, '123456', '会员42', '男', 38, '19900000040', '2026-01-17', 50, 50);
-INSERT INTO `member` VALUES (2026043, '123456', '会员43', '女', 39, '19900000041', '2026-02-18', 60, 60);
-INSERT INTO `member` VALUES (2026044, '123456', '会员44', '男', 40, '19900000042', '2026-03-19', 30, 30);
-INSERT INTO `member` VALUES (2026045, '123456', '会员45', '女', 41, '19900000043', '2026-04-20', 40, 40);
-INSERT INTO `member` VALUES (2026046, '123456', '会员46', '男', 42, '19900000044', '2026-05-21', 50, 50);
-INSERT INTO `member` VALUES (2026047, '123456', '会员47', '女', 43, '19900000045', '2026-06-22', 60, 60);
-INSERT INTO `member` VALUES (2026048, '123456', '会员48', '男', 20, '19900000046', '2026-01-23', 30, 30);
-INSERT INTO `member` VALUES (2026049, '123456', '会员49', '女', 21, '19900000047', '2026-02-24', 40, 40);
-INSERT INTO `member` VALUES (2026050, '123456', '会员50', '男', 22, '19900000048', '2026-03-25', 50, 50);
-INSERT INTO `member` VALUES (2026051, '123456', '会员51', '女', 23, '19900000049', '2026-04-26', 60, 60);
-INSERT INTO `member` VALUES (2026052, '123456', '会员52', '男', 24, '19900000050', '2026-05-01', 30, 30);
-INSERT INTO `member` VALUES (2026053, '123456', '会员53', '女', 25, '19900000051', '2026-06-02', 40, 40);
-INSERT INTO `member` VALUES (2026054, '123456', '会员54', '男', 26, '19900000052', '2026-01-03', 50, 50);
-INSERT INTO `member` VALUES (2026055, '123456', '会员55', '女', 27, '19900000053', '2026-02-04', 60, 60);
-INSERT INTO `member` VALUES (2026056, '123456', '会员56', '男', 28, '19900000054', '2026-03-05', 30, 30);
-INSERT INTO `member` VALUES (2026057, '123456', '会员57', '女', 29, '19900000055', '2026-04-06', 40, 40);
-INSERT INTO `member` VALUES (2026058, '123456', '会员58', '男', 30, '19900000056', '2026-05-07', 50, 50);
-INSERT INTO `member` VALUES (2026059, '123456', '会员59', '女', 31, '19900000057', '2026-06-08', 60, 60);
-INSERT INTO `member` VALUES (2026060, '123456', '会员60', '男', 32, '19900000058', '2026-01-09', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026001, '123456', '张三', '女', 24, '19900000004', '2025-06-05', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026002, '123456', '李四', '男', 31, '19900000002', '2026-01-01', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026003, '123456', '王五', '男', 31, '19900000003', '2026-01-01', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026004, '123456', '马六', '女', 23, '19900000001', '2026-01-16', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026005, '123456', 'Tom', '男', 24, '19900000006', '2026-02-26', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026006, '123456', 'Tylor', '女', 19, '19900000009', '2026-02-27', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026007, '123456', 'Jack', '男', 33, '19900000007', '2026-02-27', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026008, '123456', 'Mike', '男', 36, '19900000010', '2026-02-28', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026009, '123456', 'Emma', '女', 25, '19900000008', '2026-03-01', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026010, '123456', 'Ava', '女', 28, '19900000005', '2026-03-02', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026011, '123456', 'Chloe', '女', 27, '19900000059', '2026-03-23', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026012, '123456', 'Lily', '女', 25, '19900000060', '2026-03-27', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026013, '123456', '会员13', '女', 33, '19900000011', '2026-02-14', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026014, '123456', '会员14', '男', 34, '19900000012', '2026-03-15', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026015, '123456', '会员15', '女', 35, '19900000013', '2026-04-16', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026016, '123456', '会员16', '男', 36, '19900000014', '2026-05-17', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026017, '123456', '会员17', '女', 37, '19900000015', '2026-06-18', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026018, '123456', '会员18', '男', 38, '19900000016', '2026-01-19', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026019, '123456', '会员19', '女', 39, '19900000017', '2026-02-20', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026020, '123456', '会员20', '男', 40, '19900000018', '2026-03-21', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026021, '123456', '会员21', '女', 41, '19900000019', '2026-04-22', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026022, '123456', '会员22', '男', 42, '19900000020', '2026-05-23', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026023, '123456', '会员23', '女', 43, '19900000021', '2026-06-24', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026024, '123456', '会员24', '男', 20, '19900000022', '2026-01-25', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026025, '123456', '会员25', '女', 21, '19900000023', '2026-02-26', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026026, '123456', '会员26', '男', 22, '19900000024', '2026-03-01', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026027, '123456', '会员27', '女', 23, '19900000025', '2026-04-02', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026028, '123456', '会员28', '男', 24, '19900000026', '2026-05-03', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026029, '123456', '会员29', '女', 25, '19900000027', '2026-06-04', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026030, '123456', '会员30', '男', 26, '19900000028', '2026-01-05', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026031, '123456', '会员31', '女', 27, '19900000029', '2026-02-06', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026032, '123456', '会员32', '男', 28, '19900000030', '2026-03-07', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026033, '123456', '会员33', '女', 29, '19900000031', '2026-04-08', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026034, '123456', '会员34', '男', 30, '19900000032', '2026-05-09', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026035, '123456', '会员35', '女', 31, '19900000033', '2026-06-10', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026036, '123456', '会员36', '男', 32, '19900000034', '2026-01-11', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026037, '123456', '会员37', '女', 33, '19900000035', '2026-02-12', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026038, '123456', '会员38', '男', 34, '19900000036', '2026-03-13', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026039, '123456', '会员39', '女', 35, '19900000037', '2026-04-14', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026040, '123456', '会员40', '男', 36, '19900000038', '2026-05-15', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026041, '123456', '会员41', '女', 37, '19900000039', '2026-06-16', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026042, '123456', '会员42', '男', 38, '19900000040', '2026-01-17', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026043, '123456', '会员43', '女', 39, '19900000041', '2026-02-18', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026044, '123456', '会员44', '男', 40, '19900000042', '2026-03-19', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026045, '123456', '会员45', '女', 41, '19900000043', '2026-04-20', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026046, '123456', '会员46', '男', 42, '19900000044', '2026-05-21', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026047, '123456', '会员47', '女', 43, '19900000045', '2026-06-22', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026048, '123456', '会员48', '男', 20, '19900000046', '2026-01-23', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026049, '123456', '会员49', '女', 21, '19900000047', '2026-02-24', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026050, '123456', '会员50', '男', 22, '19900000048', '2026-03-25', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026051, '123456', '会员51', '女', 23, '19900000049', '2026-04-26', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026052, '123456', '会员52', '男', 24, '19900000050', '2026-05-01', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026053, '123456', '会员53', '女', 25, '19900000051', '2026-06-02', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026054, '123456', '会员54', '男', 26, '19900000052', '2026-01-03', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026055, '123456', '会员55', '女', 27, '19900000053', '2026-02-04', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026056, '123456', '会员56', '男', 28, '19900000054', '2026-03-05', 30, 30);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026057, '123456', '会员57', '女', 29, '19900000055', '2026-04-06', 40, 40);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026058, '123456', '会员58', '男', 30, '19900000056', '2026-05-07', 50, 50);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026059, '123456', '会员59', '女', 31, '19900000057', '2026-06-08', 60, 60);
+INSERT INTO `member` (`member_id`, `member_password`, `member_name`, `gender`, `age`, `phone`, `register_date`, `total_class_count`, `remain_class_count`) VALUES (2026060, '123456', '会员60', '男', 32, '19900000058', '2026-01-09', 30, 30);
 
 -- ----------------------------
 -- Table structure for employee
@@ -447,6 +450,26 @@ INSERT INTO `class_equipment` VALUES (7, 7);
 INSERT INTO `class_equipment` VALUES (8, 3);
 
 -- ----------------------------
+-- Table structure for class_coach (课程任教教练名单：一门课可多位教练)
+-- ----------------------------
+CREATE TABLE `class_coach`  (
+  `class_id` int NOT NULL COMMENT '课程ID(class_table.class_id)',
+  `coach_id` int NOT NULL COMMENT '任教教练员工ID(employee.employee_id)',
+  PRIMARY KEY (`class_id`, `coach_id`) USING BTREE,
+  KEY `idx_class_coach_coach_id` (`coach_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci;
+
+-- Records of class_coach（从主教练回填；coach_id 为 NULL 的课程=待安排，名单留空）
+INSERT INTO `class_coach` (`class_id`, `coach_id`)
+SELECT ct.class_id, ct.coach_id FROM class_table ct WHERE ct.coach_id IS NOT NULL;
+
+-- 历史报名记录回填所选教练（旧口径=按该课当时主教练）
+UPDATE class_record cr
+JOIN class_table ct ON cr.class_id = ct.class_id
+SET cr.coach_id = ct.coach_id
+WHERE cr.coach_id IS NULL;
+
+-- ----------------------------
 -- Indexes for query and analysis performance
 -- ----------------------------
 ALTER TABLE `class_record` ADD UNIQUE INDEX `uk_cr_member_class` (`member_id`, `class_id`);
@@ -459,6 +482,7 @@ ALTER TABLE `class_record` ADD INDEX `idx_class_record_class_time_record` (`clas
 ALTER TABLE `class_record` ADD INDEX `idx_class_record_status_time_record` (`status`, `join_time` DESC, `record_id` DESC);
 ALTER TABLE `class_record` ADD INDEX `idx_class_record_rating_time_record` (`rating`, `join_time` DESC, `record_id` DESC);
 ALTER TABLE `class_table` ADD INDEX `idx_class_coach_id` (`coach_id`);
+ALTER TABLE `class_record` ADD INDEX `idx_cr_coach_id` (`coach_id`);
 ALTER TABLE `class_equipment` ADD INDEX `idx_ce_equipment_id` (`equipment_id`);
 ALTER TABLE `member` ADD INDEX `idx_member_name` (`member_name`);
 ALTER TABLE `employee` ADD INDEX `idx_employee_position` (`position`);
@@ -481,6 +505,21 @@ ALTER TABLE `class_table`
   ADD CONSTRAINT `fk_class_table_coach`
   FOREIGN KEY (`coach_id`) REFERENCES `employee` (`employee_id`)
   ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `class_record`
+  ADD CONSTRAINT `fk_class_record_coach`
+  FOREIGN KEY (`coach_id`) REFERENCES `employee` (`employee_id`)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `class_coach`
+  ADD CONSTRAINT `fk_class_coach_class`
+  FOREIGN KEY (`class_id`) REFERENCES `class_table` (`class_id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `class_coach`
+  ADD CONSTRAINT `fk_class_coach_employee`
+  FOREIGN KEY (`coach_id`) REFERENCES `employee` (`employee_id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `class_equipment`
   ADD CONSTRAINT `fk_class_equipment_class`
@@ -529,33 +568,11 @@ WHERE cr.status = 1
   AND cr.rating IS NOT NULL;
 
 -- ----------------------------
--- Triggers for maintaining remaining class count
+-- Stored procedures for member course statistics
+-- 注：原「报名记录 insert/delete 自动 ±1 剩余课时」的两个触发器已移除——
+-- 课时按 class_record.total_sessions 由后端统一预扣/退回，避免与触发器双算。
 -- ----------------------------
 DELIMITER $$
-
-DROP TRIGGER IF EXISTS `trg_class_record_insert`$$
-CREATE TRIGGER `trg_class_record_insert`
-AFTER INSERT ON `class_record`
-FOR EACH ROW
-BEGIN
-    UPDATE `member`
-    SET remain_class_count = remain_class_count - 1
-    WHERE member_id = NEW.member_id;
-END$$
-
-DROP TRIGGER IF EXISTS `trg_class_record_delete`$$
-CREATE TRIGGER `trg_class_record_delete`
-AFTER DELETE ON `class_record`
-FOR EACH ROW
-BEGIN
-    UPDATE `member`
-    SET remain_class_count = remain_class_count + 1
-    WHERE member_id = OLD.member_id;
-END$$
-
--- ----------------------------
--- Stored procedures for member course statistics
--- ----------------------------
 DROP PROCEDURE IF EXISTS `GetMemberStats`$$
 CREATE PROCEDURE `GetMemberStats`(IN mid INT)
 BEGIN

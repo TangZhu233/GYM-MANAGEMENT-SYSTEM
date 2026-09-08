@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -79,10 +80,23 @@ public class ApiLoginController {
 
     @GetMapping("/toUserMain")
     public ResponseEntity<Map<String, Object>> toUserMain(HttpSession session) {
+        refreshSessionUser(session);
         Map<String, Object> body = new HashMap<>();
         body.put("success", true);
         body.put("member", session.getAttribute(SESSION_USER));
         return ResponseEntity.ok(body);
+    }
+
+    /** 会话里缓存的会员可能已被管理员在后台修改（如充值课时），读取前按会员号查库刷新，保证用户端看到最新数据。 */
+    private void refreshSessionUser(HttpSession session) {
+        Member cached = (Member) session.getAttribute(SESSION_USER);
+        if (cached == null || cached.getMemberAccount() == null) {
+            return;
+        }
+        List<Member> members = memberService.selectByMemberAccount(cached.getMemberAccount());
+        if (members != null && !members.isEmpty()) {
+            session.setAttribute(SESSION_USER, members.get(0));
+        }
     }
 
     /** 管理员登录后写入 session：身份 + 主页统计（与原先 adminMain 依赖的 key 一致）。 */
