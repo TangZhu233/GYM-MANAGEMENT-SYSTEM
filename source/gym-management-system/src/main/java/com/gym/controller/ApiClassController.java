@@ -150,42 +150,44 @@ public class ApiClassController {
     }
 
     @PostMapping("/addClass")
-    public ResponseEntity<Map<String, Object>> addClass(ClassTable classTable) {
+    public ResponseEntity<Map<String, Object>> addClass(ClassTable classTable, String coachIds) {
         Map<String, Object> resp = new HashMap<>();
+        if (classTable == null || classTable.getClassName() == null || classTable.getClassName().isBlank()) {
+            resp.put("success", false);
+            resp.put("message", "课程名称不能为空");
+            return ResponseEntity.ok(resp);
+        }
         if (classTable.getTotalSessions() == null || classTable.getTotalSessions() < 1) {
             classTable.setTotalSessions(1);
         }
-        Integer coach = parseSingleCoachId(classTable.getCoachId());
-        if (coach != null && !isActiveCoach(coach)) {
+        // 一次可选多位任课教练（逗号串；空=待安排）
+        List<Integer> coachIdList = parseCoachIds(coachIds);
+        for (Integer coachId : coachIdList) {
+            if (!isActiveCoach(coachId)) {
+                resp.put("success", false);
+                resp.put("message", "所选教练不存在或不是健身教练");
+                return ResponseEntity.ok(resp);
+            }
+        }
+        Boolean inserted = classTableService.insertClass(classTable);
+        if (inserted == null || !inserted) {
             resp.put("success", false);
-            resp.put("message", "所选教练不存在或不是健身教练");
+            resp.put("message", "课程添加失败，请重试");
             return ResponseEntity.ok(resp);
         }
-        classTableService.insertClass(classTable);
-        // 选了教练则同时写入任教名单（可后续在课程管理里再加教练）
-        if (coach != null) {
-            List<Integer> one = List.of(coach);
-            classTableService.insertClassCoaches(classTable.getClassId(), one);
-            classTableService.recomputePrimaryCoaches(one);
+        // 选中的教练一次性写入任教名单，并重算主教练（主教练 = 名单中最小教练）
+        if (!coachIdList.isEmpty() && classTable.getClassId() != null) {
+            classTableService.insertClassCoaches(classTable.getClassId(), coachIdList);
+            classTableService.recomputePrimaryCoaches(List.of(classTable.getClassId()));
         }
         resp.put("success", true);
+        resp.put("classId", classTable.getClassId());
         return ResponseEntity.ok(resp);
     }
 
     private boolean isActiveCoach(Integer employeeId) {
         List<Employee> list = employeeService.selectByEmployeeAccount(String.valueOf(employeeId));
         return list != null && !list.isEmpty() && ROLE_COACH.equals(list.get(0).getStaff());
-    }
-
-    private static Integer parseSingleCoachId(String coachId) {
-        if (coachId == null || coachId.isBlank()) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(coachId.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     @PostMapping("/updateClassSessions")

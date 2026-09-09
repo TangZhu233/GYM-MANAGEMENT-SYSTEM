@@ -53,9 +53,19 @@ public class SessionAuthInterceptor implements HandlerInterceptor {
 
         boolean requireUser = isUserApi(uri);
         String requiredSessionKey = requireUser ? "user" : "admin";
+        // 营业状态只读 GET：管理员/会员任一已登录会话均可读（打烊仅是提示，不拦截操作）
+        boolean anyRoleRead = "/api/business/status".equals(uri) && "GET".equalsIgnoreCase(request.getMethod());
 
         HttpSession session = request.getSession(false);
-        if (session != null && session.getAttribute(requiredSessionKey) != null){
+        boolean authed;
+        if (session == null) {
+            authed = false;
+        } else if (anyRoleRead) {
+            authed = session.getAttribute("admin") != null || session.getAttribute("user") != null;
+        } else {
+            authed = session.getAttribute(requiredSessionKey) != null;
+        }
+        if (authed) {
             return true;
         }
 

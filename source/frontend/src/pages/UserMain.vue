@@ -8,6 +8,17 @@
       <el-button type="danger" @click="logout">退出登录</el-button>
     </div>
 
+    <div v-if="businessStatus" class="biz-banner" :class="businessStatus">
+      <template v-if="businessStatus === 'closed'">
+        <span class="biz-banner-dot"></span>
+        <span>本店已打烊 · 线上报名、打卡等仍可用，到店前请先确认</span>
+      </template>
+      <template v-else>
+        <span class="biz-banner-dot"></span>
+        <span>营业中 · 欢迎到店锻炼</span>
+      </template>
+    </div>
+
     <template v-if="member">
       <el-card class="home-card" shadow="never">
         <div class="home-head">
@@ -40,6 +51,10 @@
         <el-button type="primary" @click="router.push('/user/toApplyClass')">报名选课</el-button>
         <el-button @click="router.push('/user/toUserClass')">我的课程</el-button>
         <el-button @click="router.push('/user/toUserInfo')">个人信息</el-button>
+        <el-button @click="router.push('/user/toHealth')">健康评估</el-button>
+        <el-button @click="router.push('/user/toCheckin')">运动打卡</el-button>
+        <el-button @click="router.push('/user/toDiet')">饮食推荐</el-button>
+        <el-button @click="router.push('/user/toChat')">健康助手</el-button>
       </div>
     </template>
     <el-card v-else class="home-card" shadow="never">未登录或会话失效。</el-card>
@@ -50,6 +65,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api, { postForm } from '../api/client'
+import { businessStatus, refreshBusinessStatus } from '../state/business'
 
 const router = useRouter()
 const member = ref(null)
@@ -66,11 +82,50 @@ async function logout() {
 }
 
 onMounted(() => {
+  refreshBusinessStatus().catch(() => {})
   load().catch(() => {})
 })
 </script>
 
 <style scoped>
+.biz-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 820px;
+  margin: 0 0 18px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.biz-banner .biz-banner-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.biz-banner.open {
+  border: 1px solid #bbf7d0;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.biz-banner.open .biz-banner-dot {
+  background: #22c55e;
+}
+
+.biz-banner.closed {
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.biz-banner.closed .biz-banner-dot {
+  background: #ef4444;
+}
+
 .home-card {
   max-width: 820px;
   border: 1px solid #e3eaf3;

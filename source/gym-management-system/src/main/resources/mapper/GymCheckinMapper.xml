@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.GymCheckinMapper">
+
+    <select id="selectCheckDates" resultType="java.time.LocalDate">
+        SELECT check_date
+        FROM gym_checkin
+        WHERE member_id = #{memberId}
+        ORDER BY check_date ASC
+    </select>
+
+    <insert id="insertCheckin">
+        INSERT INTO gym_checkin (member_id, check_date)
+        VALUES (#{memberId}, #{checkDate})
+    </insert>
+
+</mapper>

@@ -19,9 +19,6 @@
       <el-table :data="recordList" style="width: 100%">
         <el-table-column prop="classId" label="编号" width="120" />
         <el-table-column prop="className" label="名称" />
-        <el-table-column label="时间" width="180">
-          <template #default="scope">{{ formatDateTime(scope.row.classBegin) }}</template>
-        </el-table-column>
         <el-table-column label="教练" width="160">
           <template #default="scope">{{ scope.row.coachName || '-' }}</template>
         </el-table-column>
@@ -117,10 +114,15 @@ const summary = computed(() => {
 })
 
 // 该条报名记录的课次进度：total=总课时, done=已完成, remain=剩余
+// 口径：记录一旦已完成(status=1)=该课程整门已上完，已完成节按总节计、不再显示剩余；
+// 兼容早期无“按节打卡”的历史已完成数据（completed_sessions 为空时不再误显“剩N节”）。
 function sess(r) {
   const total = Math.max(Number(r.totalSessions || 1), 1)
-  const done = Math.min(Math.max(Number(r.completedSessions || 0), 0), total)
-  return { total, done, remain: total - done }
+  const finished = Number(r.status) === 1
+  const done = finished
+    ? total
+    : Math.min(Math.max(Number(r.completedSessions || 0), 0), total)
+  return { total, done, remain: finished ? 0 : total - done }
 }
 
 function sessPercent(r) {
@@ -147,28 +149,6 @@ function ratingType(r) {
   if (r >= 6.0) return ''
   if (r >= 5.0) return 'warning'
   return 'danger'
-}
-
-function padTime(value) {
-  return String(value).padStart(2, '0')
-}
-
-function formatDateTime(value) {
-  if (!value) return '-'
-  if (typeof value === 'string') {
-    const normalized = value.trim().replace('T', ' ')
-    const matched = normalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/)
-    if (matched) return `${matched[1]} ${matched[2]}`
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-
-  return [
-    date.getFullYear(),
-    padTime(date.getMonth() + 1),
-    padTime(date.getDate())
-  ].join('-') + ` ${padTime(date.getHours())}:${padTime(date.getMinutes())}`
 }
 
 async function load() {

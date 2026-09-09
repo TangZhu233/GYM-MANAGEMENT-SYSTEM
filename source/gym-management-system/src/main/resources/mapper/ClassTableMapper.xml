@@ -7,7 +7,6 @@
     <select id="findAll" resultType="classTable">
         SELECT ct.class_id,
                ct.class_name,
-               ct.class_begin,
                ct.class_duration AS class_time,
                (SELECT GROUP_CONCAT(e2.employee_name ORDER BY e2.employee_id)
                   FROM class_coach cc2
@@ -33,9 +32,9 @@
         FROM class_table ct
         LEFT JOIN employee e ON ct.coach_id = e.employee_id
         LEFT JOIN class_record cr ON ct.class_id = cr.class_id
-        GROUP BY ct.class_id, ct.class_name, ct.class_begin, ct.class_duration,
+        GROUP BY ct.class_id, ct.class_name, ct.class_duration,
                  e.employee_id, ct.class_level, ct.max_capacity, ct.class_description, ct.price
-        ORDER BY ct.class_begin ASC, ct.class_id ASC
+        ORDER BY ct.class_id ASC
     </select>
 
     <update id="updateTotalSessions">
@@ -104,15 +103,14 @@
         DELETE FROM class_table WHERE class_id = #{classId}
     </delete>
 
-    <insert id="insertClass" parameterType="classTable">
-        INSERT INTO class_table (class_id, class_name, class_begin, class_duration, class_level, coach_id, max_capacity, total_sessions, class_description, price)
-        VALUES (#{classId}, #{className}, #{classBegin}, #{classDuration}, #{classLevel}, #{coachId}, #{maxCapacity}, #{totalSessions}, #{classDescription}, #{price})
+    <insert id="insertClass" parameterType="classTable" useGeneratedKeys="true" keyProperty="classId">
+        INSERT INTO class_table (class_name, class_duration, class_level, coach_id, max_capacity, total_sessions, class_description, price)
+        VALUES (#{className}, #{classDuration}, #{classLevel}, #{coachId}, #{maxCapacity}, #{totalSessions}, #{classDescription}, #{price})
     </insert>
 
     <select id="selectByClassId" parameterType="java.lang.Integer" resultType="classTable">
         SELECT ct.class_id,
                ct.class_name,
-               ct.class_begin,
                ct.class_duration AS class_time,
                (SELECT GROUP_CONCAT(e2.employee_name ORDER BY e2.employee_id)
                   FROM class_coach cc2

@@ -13,6 +13,15 @@ mybatis:
   type-aliases-package: com.gym.pojo
 
 
+# AI 健康助手（OpenAI 兼容接口，此处接 DeepSeek 官方 API）
+# 安全约定：真实密钥不要写进本文件！请用环境变量 AI_API_KEY 提供；
+# 代码读到空时会提示“AI 助手未配置密钥”，不影响系统其它功能。
+ai:
+  base-url: ${AI_BASE_URL:https://api.deepseek.com/v1}
+  model: ${AI_MODEL:deepseek-v4-flash}
+  api-key: ${AI_API_KEY:}
+
+
 
 
 

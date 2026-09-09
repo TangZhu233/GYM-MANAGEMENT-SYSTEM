@@ -20,11 +20,8 @@
           <el-input-number v-model="form.employeeAge" :min="15" :max="100" :step="1" />
         </el-form-item>
         <el-form-item label="职务">
-          <el-select v-model="form.staff" placeholder="请选择职务" filterable allow-create>
-            <el-option label="健身教练" value="健身教练" />
-            <el-option label="保洁员" value="保洁员" />
-            <el-option label="前台" value="前台" />
-            <el-option label="经理" value="经理" />
+          <el-select v-model="form.staff" placeholder="请选择职务" filterable allow-create default-first-option>
+            <el-option v-for="o in STAFF_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="isCoach" label="所教课程">
@@ -62,6 +59,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api, { postForm } from '../api/client'
+import { STAFF_OPTIONS } from '../constants/staff'
 
 const router = useRouter()
 const msg = ref('')

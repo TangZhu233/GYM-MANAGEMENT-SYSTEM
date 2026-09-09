@@ -20,9 +20,16 @@
           </el-select>
         </el-form-item>
         <el-form-item label="职务">
-          <el-select v-model="filters.staff" clearable placeholder="全部" class="staff-select">
-            <el-option label="健身教练" value="健身教练" />
-            <el-option label="保洁员" value="保洁员" />
+          <el-select
+            v-model="filters.staff"
+            clearable
+            filterable
+            allow-create
+            default-first-option
+            placeholder="全部"
+            class="staff-select"
+          >
+            <el-option v-for="o in STAFF_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
           </el-select>
         </el-form-item>
         <el-form-item class="filter-actions">
@@ -38,7 +45,11 @@
       <el-table-column prop="employeeGender" label="性别" width="90" />
       <el-table-column prop="employeeAge" label="年龄" width="80" />
       <el-table-column prop="entryTime" label="入职时间" width="160" />
-      <el-table-column prop="staff" label="职务" />
+      <el-table-column label="职务">
+        <template #default="scope">
+          <el-tag :type="staffTagType(scope.row.staff)" size="small">{{ scope.row.staff || '-' }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="employeeMessage" label="备注信息" />
       <el-table-column label="操作" width="180">
         <template #default="scope">
@@ -68,6 +79,7 @@ import { onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref }
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api, { postForm } from '../api/client'
+import { STAFF_OPTIONS, staffTagType } from '../constants/staff'
 
 const router = useRouter()
 const employeeList = ref([])

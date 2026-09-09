@@ -47,9 +47,7 @@
           </el-form-item>
           <el-form-item label="时长">
             <el-select v-model="classFilters.duration" clearable placeholder="全部">
-              <el-option label="45分钟" value="45" />
-              <el-option label="60分钟" value="60" />
-              <el-option label="90分钟" value="90" />
+              <el-option v-for="o in DURATION_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
             </el-select>
           </el-form-item>
           <el-form-item class="class-filter-actions">
@@ -88,9 +86,6 @@
         <el-table-column label="等级" width="80">
           <template #default="scope">{{ levelText(scope.row.classLevel) }}</template>
         </el-table-column>
-        <el-table-column label="开课时间" width="180">
-          <template #default="scope">{{ formatDateTime(scope.row.classBegin) }}</template>
-        </el-table-column>
         <el-table-column label="教练" width="150">
           <template #default="scope">
             <template v-if="scope.row.coach">
@@ -104,7 +99,16 @@
                 {{ nm }}
               </el-tag>
             </template>
-            <el-tag v-else type="info" size="small" effect="light">待安排</el-tag>
+            <el-tag
+              v-else
+              type="info"
+              size="small"
+              effect="plain"
+              class="coach-none"
+              @click="openCoachEditor(scope.row)"
+            >
+              待安排 · 点此选教练
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="时长" width="90">
@@ -116,7 +120,7 @@
         <el-table-column label="操作" width="320">
           <template #default="scope">
             <el-button size="small" type="primary" plain @click="openRecords(scope.row.classId)">查看报名</el-button>
-            <el-button size="small" @click="openCoachEditor(scope.row)">改教练</el-button>
+            <el-button size="small" @click="openCoachEditor(scope.row)">{{ scope.row.coach ? '改教练' : '安排教练' }}</el-button>
             <el-button size="small" type="warning" plain @click="setClassSessions(scope.row)">节数</el-button>
             <el-button size="small" type="danger" @click="delClass(scope.row.classId)">删除</el-button>
           </template>
@@ -259,7 +263,6 @@
           <el-descriptions-item label="价格">¥{{ detail.cur.price }}</el-descriptions-item>
           <el-descriptions-item label="教练">{{ detail.cur.coach }}</el-descriptions-item>
           <el-descriptions-item label="容量">{{ detail.enrolled }} / {{ detail.cur.maxCapacity || '未设置' }}</el-descriptions-item>
-          <el-descriptions-item label="开课时间" :span="2">{{ formatDateTime(detail.cur.classBegin) }}</el-descriptions-item>
           <el-descriptions-item label="课程描述" :span="2">{{ detail.cur.classDescription || '暂无描述' }}</el-descriptions-item>
           <el-descriptions-item label="使用器械" :span="2">
             <template v-if="detail.equipList?.length">
@@ -280,6 +283,7 @@ import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, react
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api, { postForm } from '../api/client'
+import { DURATION_OPTIONS } from '../constants/class'
 
 const router = useRouter()
 const route = useRoute()
@@ -888,6 +892,18 @@ p,
 .tag,
 .coach-tag {
   margin-right: 6px;
+}
+
+.coach-none {
+  cursor: pointer;
+  border-style: dashed;
+  transition: all 0.2s;
+}
+
+.coach-none:hover {
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+  background: #ecf5ff;
 }
 
 @media (max-width: 1200px) {

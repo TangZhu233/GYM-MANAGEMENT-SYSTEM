@@ -3,7 +3,9 @@
     <el-aside width="240px" class="role-aside">
       <div class="role-brand">
         <div class="role-title">健身房管理系统</div>
-        <div class="role-subtitle">今日营业中</div>
+        <div class="role-subtitle" :style="{ color: subtitle.color }">
+          <span class="biz-dot" :style="{ background: subtitle.color }"></span>{{ subtitle.text }}
+        </div>
       </div>
 
       <el-menu
@@ -28,6 +30,14 @@
           <el-menu-item index="/toUserMain">会员主页</el-menu-item>
           <el-menu-item index="/user/toUserInfo">个人信息</el-menu-item>
 
+          <el-sub-menu index="user-health">
+            <template #title>健康管理</template>
+            <el-menu-item index="/user/toHealth">健康评估（BMI）</el-menu-item>
+            <el-menu-item index="/user/toCheckin">运动打卡</el-menu-item>
+            <el-menu-item index="/user/toDiet">饮食推荐</el-menu-item>
+          </el-sub-menu>
+          <el-menu-item index="/user/toChat">健康助手（AI）</el-menu-item>
+
           <el-sub-menu index="user-course">
             <template #title>课程管理</template>
             <el-menu-item index="/user/toApplyClass">报名选课</el-menu-item>
@@ -38,7 +48,7 @@
 
       <div class="role-footer">
         <div class="role-footer-title">{{ role === 'admin' ? '管理员' : '会员' }}</div>
-        <div class="role-footer-text">{{ role === 'admin' ? '今日运营数据已更新' : '欢迎回来' }}</div>
+        <div class="role-footer-text">{{ role === 'admin' ? '今日运营数据已更新' : memberWelcome }}</div>
       </div>
     </el-aside>
 
@@ -49,8 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import api from '../api/client'
+import { businessStatus, refreshBusinessStatus } from '../state/business'
 
 type Role = 'admin' | 'user'
 
@@ -60,6 +72,48 @@ const props = defineProps<{
 
 const route = useRoute()
 const activePath = computed(() => route.path)
+
+const memberName = ref('')
+
+// 营业状态：绿=营业中 / 红=已打烊（红绿语义同 el-tag success/danger）
+const subtitle = computed(() => {
+  const st = businessStatus.value
+  if (st === 'closed') return { text: '已打烊', color: '#f87171' }
+  if (st === 'open') return { text: '营业中', color: '#4ade80' }
+  return { text: '营业状态…', color: '#91a3b7' }
+})
+
+const memberWelcome = computed(() =>
+  memberName.value ? `${memberName.value}，欢迎回来` : '欢迎回来'
+)
+
+async function loadStatus() {
+  await refreshBusinessStatus()
+}
+
+async function loadMemberName() {
+  if (props.role !== 'user') {
+    memberName.value = ''
+    return
+  }
+  try {
+    const resp = await api.get('/api/toUserMain')
+    memberName.value = resp.data?.member?.memberName || ''
+  } catch (e) {
+    memberName.value = ''
+  }
+}
+
+watch(() => props.role, () => {
+  memberName.value = ''
+  loadStatus()
+  loadMemberName()
+})
+
+onMounted(() => {
+  loadStatus()
+  loadMemberName()
+})
 </script>
 
 <style scoped>
@@ -104,6 +158,16 @@ const activePath = computed(() => route.path)
   margin-top: 8px;
   color: #91a3b7;
   font-size: 12px;
+}
+
+.biz-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
 }
 
 .role-menu {

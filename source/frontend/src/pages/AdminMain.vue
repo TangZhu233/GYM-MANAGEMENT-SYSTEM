@@ -5,10 +5,18 @@
         <h2 class="page-title">管理员主页</h2>
         <p class="page-sub">欢迎回来，以下是健身房今日概览</p>
       </div>
-      <el-button class="logout-btn" @click="logout">
-        <el-icon><SwitchButton /></el-icon>
-        退出登录
-      </el-button>
+      <div class="header-actions">
+        <div class="biz-pill" :class="isClosed ? 'closed' : 'open'">
+          <span class="biz-dot"></span>{{ isClosed ? '已打烊' : '营业中' }}
+        </div>
+        <el-button size="small" class="biz-toggle-btn" :class="isClosed ? 'go-open' : ''" @click="toggleBusiness">
+          {{ isClosed ? '恢复营业' : '设为打烊' }}
+        </el-button>
+        <el-button class="logout-btn" @click="logout">
+          <el-icon><SwitchButton /></el-icon>
+          退出登录
+        </el-button>
+      </div>
     </div>
 
     <el-row :gutter="20" class="stats-row">
@@ -51,7 +59,9 @@
 import { Calendar, CreditCard, SuitcaseLine, SwitchButton, Tools, User } from '@element-plus/icons-vue'
 import { computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import api, { postForm } from '../api/client'
+import { businessStatus, refreshBusinessStatus } from '../state/business'
 
 const router = useRouter()
 const route = useRoute()
@@ -76,6 +86,33 @@ const trendDelta = reactive({
 
 const totalKeys = ['memberTotal', 'employeeTotal', 'humanTotal', 'equipmentTotal']
 const dailyTotalsCacheKey = 'gym-admin-main-daily-totals'
+
+const isClosed = computed(() => businessStatus.value === 'closed')
+
+async function toggleBusiness() {
+  const toOpen = isClosed.value
+  const action = toOpen ? '恢复营业' : '设为打烊'
+  try {
+    await ElMessageBox.confirm(`确定要${action}吗？`, '营业状态', {
+      type: toOpen ? 'success' : 'warning',
+      confirmButtonText: action
+    })
+  } catch {
+    return
+  }
+  try {
+    const resp = await postForm('/api/business/setStatus', { status: toOpen ? 1 : 0 })
+    const data = resp.data || {}
+    if (data.success === false) {
+      ElMessage.error(data.message || '设置失败')
+      return
+    }
+    await refreshBusinessStatus(true)
+    ElMessage.success(toOpen ? '已恢复营业' : '已设为打烊')
+  } catch (e) {
+    ElMessage.error('设置失败：网络异常，请稍后重试')
+  }
+}
 
 const statCards = computed(() => [
   { label: '健身房总人数', value: totals.humanTotal, unit: '人', glyph: 'user', color: '#3b82f6', bg: '#eff6ff', trend: trendState.humanTotal, delta: trendDelta.humanTotal },
@@ -162,6 +199,7 @@ async function logout() {
 }
 
 onMounted(() => {
+  refreshBusinessStatus().catch(() => {})
   load().catch(() => {})
 })
 </script>
@@ -215,6 +253,69 @@ onMounted(() => {
   border-color: #ef4444;
   background: #fef2f2;
   color: #ef4444;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.biz-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.biz-pill .biz-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.biz-pill.open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.biz-pill.open .biz-dot {
+  background: #22c55e;
+}
+
+.biz-pill.closed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.biz-pill.closed .biz-dot {
+  background: #ef4444;
+}
+
+.biz-toggle-btn {
+  border-color: #fca5a5;
+  background: #ffffff;
+  color: #b91c1c;
+}
+
+.biz-toggle-btn:hover {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.biz-toggle-btn.go-open {
+  border-color: #86efac;
+  color: #15803d;
+}
+
+.biz-toggle-btn.go-open:hover {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  color: #15803d;
 }
 
 .stats-row {

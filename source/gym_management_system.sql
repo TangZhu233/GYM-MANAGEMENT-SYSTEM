@@ -25,9 +25,8 @@ INSERT INTO `admin` VALUES (1003, '123456');
 -- ----------------------------
 DROP TABLE IF EXISTS `class_table`;
 CREATE TABLE `class_table`  (
-  `class_id` int NOT NULL COMMENT '课程id',
+  `class_id` int NOT NULL AUTO_INCREMENT COMMENT '课程id',
   `class_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '课程名称',
-  `class_begin` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '开课时间',
   `class_duration` int NULL DEFAULT NULL COMMENT '课程时长(分钟)',
   `class_level` int NULL DEFAULT 1 COMMENT '课程等级 1入门 2进阶 3专业',
   `coach_id` int NULL DEFAULT NULL COMMENT '教练ID FK->employee',
@@ -41,17 +40,17 @@ CREATE TABLE `class_table`  (
 -- ----------------------------
 -- Records of class_table
 -- ----------------------------
-INSERT INTO `class_table` VALUES (1, '增肌', '2026年1月1日 15:00', 60, 1, 101038721, 42, '增肌训练课程', 200, 1);
-INSERT INTO `class_table` VALUES (2, '瑜伽', '2026年1月2日 10:20', 90, 2, 101068283, 20, '瑜伽课程', 150, 1);
-INSERT INTO `class_table` VALUES (3, '减脂', '2026年3月6日 18:00', 90, 2, 101053687, 40, '减脂训练课程', 180, 1);
-INSERT INTO `class_table` VALUES (4, '运动康复', '2026年2月2日 10:00', 45, 3, 101045354, 12, '运动康复课程', 300, 1);
-INSERT INTO `class_table` VALUES (5, '综合格斗', '2026年2月3日 15:00', 60, 2, 101038721, 20, '综合格斗训练', 220, 1);
-INSERT INTO `class_table` VALUES (6, '塑形', '2026年2月3日 15:00', 60, 1, 101068283, 18, '塑形训练课程', 160, 1);
-INSERT INTO `class_table` VALUES (7, '普拉提', '2026年3月1日 17:30', 60, 2, 101053687, 22, '普拉提课程', 200, 1);
-INSERT INTO `class_table` VALUES (8, '爵士舞', '2026年2月22日 09:00', 90, 1, 101045354, 28, '爵士舞课程', 130, 1);
-INSERT INTO `class_table` VALUES (9, '杠铃操', '2026年2月4日 15:00', 60, 2, 101038721, 18, '杠铃操课程', 170, 1);
-INSERT INTO `class_table` VALUES (10, '动感单车', '2026年3月8日 15:00', 45, 1, 101068283, 34, '动感单车课程', 120, 1);
-INSERT INTO `class_table` VALUES (11, '健美操', '2026年2月22日 18:00', 60, 1, 101053687, 20, '健美操课程', 140, 1);
+INSERT INTO `class_table` VALUES (1, '增肌', 60, 1, 101038721, 42, '增肌训练课程', 200, 1);
+INSERT INTO `class_table` VALUES (2, '瑜伽', 90, 2, 101068283, 20, '瑜伽课程', 150, 1);
+INSERT INTO `class_table` VALUES (3, '减脂', 90, 2, 101053687, 40, '减脂训练课程', 180, 1);
+INSERT INTO `class_table` VALUES (4, '运动康复', 45, 3, 101045354, 12, '运动康复课程', 300, 1);
+INSERT INTO `class_table` VALUES (5, '综合格斗', 60, 2, 101038721, 20, '综合格斗训练', 220, 1);
+INSERT INTO `class_table` VALUES (6, '塑形', 60, 1, 101068283, 18, '塑形训练课程', 160, 1);
+INSERT INTO `class_table` VALUES (7, '普拉提', 60, 2, 101053687, 22, '普拉提课程', 200, 1);
+INSERT INTO `class_table` VALUES (8, '爵士舞', 90, 1, 101045354, 28, '爵士舞课程', 130, 1);
+INSERT INTO `class_table` VALUES (9, '杠铃操', 60, 2, 101038721, 18, '杠铃操课程', 170, 1);
+INSERT INTO `class_table` VALUES (10, '动感单车', 45, 1, 101068283, 34, '动感单车课程', 120, 1);
+INSERT INTO `class_table` VALUES (11, '健美操', 60, 1, 101053687, 20, '健美操课程', 140, 1);
 
 
 -- ----------------------------
@@ -291,6 +290,20 @@ INSERT INTO `class_record` (member_id, class_id, join_time, status, rating) VALU
 (2026055, 11, '2026-02-22 18:00:00', 1, NULL),
 (2026056, 11, '2026-02-22 18:00:00', 0, 8.1),
 (2026057, 11, '2026-02-22 18:00:00', 0, 8.5);
+
+-- 已完成报名记录回填（口径：status=1=整门课上完，已完成节=总节，剩余不再显示）。
+-- 早期无“按节打卡”的历史记录仅置了 status=1，completed_sessions 为空会令会员端误显“剩N节”。
+-- 幂等；仅修正已完成(status=1)行，不触碰进行中(status=0)记录。增量同款见 db/fix_finished_record_progress.sql。
+UPDATE class_record cr
+LEFT JOIN class_table ct ON cr.class_id = ct.class_id
+SET cr.total_sessions = COALESCE(cr.total_sessions, ct.total_sessions, 1)
+WHERE cr.status = 1 AND cr.total_sessions IS NULL;
+
+UPDATE class_record cr
+SET cr.completed_sessions = cr.total_sessions
+WHERE cr.status = 1
+  AND cr.total_sessions IS NOT NULL
+  AND (cr.completed_sessions IS NULL OR cr.completed_sessions < cr.total_sessions);
 
 
 -- ----------------------------
@@ -631,5 +644,33 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ----------------------------
+-- Table structure for business_status (营业状态，单行)
+-- ----------------------------
+DROP TABLE IF EXISTS `business_status`;
+CREATE TABLE `business_status`  (
+  `id` int NOT NULL DEFAULT 1 COMMENT '主键(固定1)',
+  `status` int NOT NULL DEFAULT 1 COMMENT '营业状态 1营业中 0打烊',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact COMMENT '营业状态';
+
+-- ----------------------------
+-- Records of business_status
+-- ----------------------------
+INSERT INTO `business_status` (`id`, `status`) VALUES (1, 1);
+
+-- ----------------------------
+-- Table structure for gym_checkin (会员每日运动打卡)
+-- ----------------------------
+DROP TABLE IF EXISTS `gym_checkin`;
+CREATE TABLE `gym_checkin`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '打卡id',
+  `member_id` int NOT NULL COMMENT '会员ID',
+  `check_date` date NOT NULL COMMENT '打卡日期',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uq_checkin_member_date` (`member_id`, `check_date`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact COMMENT '会员每日运动打卡';
 
 SET FOREIGN_KEY_CHECKS = 1;

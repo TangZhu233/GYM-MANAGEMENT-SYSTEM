@@ -30,6 +30,10 @@ const routes = [
   { path: '/user/toUpdateInfo', component: () => import('../pages/UserToUpdateInfo.vue'), meta: { requiresAuth: true, role: 'user' } },
   { path: '/user/toUserClass', component: () => import('../pages/UserToUserClass.vue'), meta: { requiresAuth: true, role: 'user' } },
   { path: '/user/toApplyClass', component: () => import('../pages/UserToApplyClass.vue'), meta: { requiresAuth: true, role: 'user' } },
+  { path: '/user/toHealth', component: () => import('../pages/UserToHealth.vue'), meta: { requiresAuth: true, role: 'user' } },
+  { path: '/user/toCheckin', component: () => import('../pages/UserToCheckin.vue'), meta: { requiresAuth: true, role: 'user' } },
+  { path: '/user/toDiet', component: () => import('../pages/UserToDiet.vue'), meta: { requiresAuth: true, role: 'user' } },
+  { path: '/user/toChat', component: () => import('../pages/UserToChat.vue'), meta: { requiresAuth: true, role: 'user' } },
 
   { path: '/:pathMatch(.*)*', component: () => import('../pages/NotImplemented.vue') }
 ]

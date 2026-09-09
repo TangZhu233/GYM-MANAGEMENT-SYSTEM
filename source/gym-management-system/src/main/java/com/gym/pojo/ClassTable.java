@@ -6,7 +6,6 @@ import lombok.Data;
 public class ClassTable {
     private Integer classId;
     private String className;
-    private String classBegin;
     private String classTime;
     private String coach;
     private String coachId;

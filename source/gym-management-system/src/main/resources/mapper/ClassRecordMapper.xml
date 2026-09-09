@@ -12,7 +12,6 @@
         <result column="coach_id" property="coachId"/>
         <result column="class_name" property="className"/>
         <result column="coach_name" property="coachName"/>
-        <result column="class_begin" property="classBegin"/>
         <result column="join_time" property="joinTime"/>
         <result column="status" property="status"/>
         <result column="total_sessions" property="totalSessions"/>

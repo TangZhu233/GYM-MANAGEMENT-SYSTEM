@@ -5,7 +5,7 @@
         <h2>课程报名记录</h2>
         <p>
           课程编号: {{ classId || '全部' }}
-          <template v-if="className"> | 课程名称: {{ className }} | 开课时间: {{ formatDateTime(classBegin) }}</template>
+          <template v-if="className"> | 课程名称: {{ className }}</template>
         </p>
       </div>
     </div>
@@ -77,7 +77,6 @@ import api from '../api/client'
 const route = useRoute()
 const classId = ref(route.query.classId || '')
 const className = ref('')
-const classBegin = ref('')
 const recordList = ref([])
 const lowRating = ref(6)
 const highRating = ref(8)
@@ -126,7 +125,6 @@ async function load() {
   recordList.value = list
   if (list.length) {
     className.value = list[0].className || ''
-    classBegin.value = list[0].classBegin || ''
   }
 }
 
