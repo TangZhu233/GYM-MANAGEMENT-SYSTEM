@@ -11,6 +11,8 @@
 - 课程管理：课程查询、新增、删除，显示课程容量、教练、价格、报名人数等信息；一门课可挂多位任课教练（课程上可直接「改教练」），无教练的课程显示「待安排」；支持按教练筛选课程及其报名记录。
 - 课程报名记录：按课程 / 按教练查询报名记录；每条记录显示该会员报名时选择的教练。
 - 会员端功能：会员登录、个人信息查看与修改、课程报名、已报名课程查询；报名时需从该课程任课教练中选择一位（无教练的课程不可报名），「我的课程」显示所选教练；卡内课时与资料实时取自数据库（管理员后台修改后会员端即时可见）。
+- 健康管理（会员端）：健康评估（BMI 实时计算与分级刻度）、运动打卡（日历 / 连续 / 累计）、饮食推荐（按 BMI 估算全天热量与三餐），以及健康助手（AI 问答，需配置 `AI_API_KEY`）。
+- 营业状态：管理员可切换「营业中 / 已打烊」，全站显示状态提示；打烊仅作提示，不拦截线上操作。
 - 运营分析：课程报名排行、评分排行、统计卡片和课程分析图表展示。
 - 数据库实验接口：保留若干用于课程实验演示的查询、视图和业务操作接口。
 
@@ -71,9 +73,43 @@
 
 ![课程运营气泡图](report_screenshots/fig6-4b-course-analysis-bubble.png)
 
-### 会员端课程页面
+### 会员端功能
 
-![会员端课程页面](report_screenshots/fig6-5-user-course.png)
+#### 会员登录
+
+![会员登录](report_screenshots/fig8-1-user-login.png)
+
+#### 会员主页
+
+![会员主页](report_screenshots/fig8-2-user-main.png)
+
+#### 个人信息与修改
+
+![个人信息](report_screenshots/fig8-3-user-info.png)
+
+![修改个人信息](report_screenshots/fig8-4-user-update-info.png)
+
+#### 报名选课（选择任课教练）
+
+![报名选课](report_screenshots/fig6-5-user-course.png)
+
+![选择任课教练](report_screenshots/fig8-5-user-apply-class-coach.png)
+
+#### 我的课程与评分
+
+![我的课程](report_screenshots/fig8-6-user-my-class.png)
+
+![课程评分](report_screenshots/fig8-7-user-rating.png)
+
+#### 健康管理
+
+![健康评估](report_screenshots/fig8-8-user-health-bmi.png)
+
+![运动打卡](report_screenshots/fig8-9-user-checkin.png)
+
+![饮食推荐](report_screenshots/fig8-10-user-diet.png)
+
+![健康助手](report_screenshots/fig8-11-user-chat.png)
 
 ## 快速启动：Docker Compose
 
@@ -202,6 +238,9 @@ http://localhost:5173
 | 器材 | `/api/equipment` | 器材查询、新增、修改、删除 |
 | 课程 | `/api/class` | 课程查询、报名记录、按教练筛选、运营分析、任教教练名单维护（updateClassCoaches） |
 | 会员端 | `/api/user` | 会员信息、报名（需选教练）、退课、已报名课程 |
+| 健康管理 | `/api/user/health` | BMI 评估、运动打卡、饮食推荐 |
+| 健康助手 | `/api/user/chat` | AI 健康问答（需配置 `AI_API_KEY`） |
+| 营业状态 | `/api/business` | 查询营业状态、管理员切换营业 / 打烊 |
 | 实验接口 | `/api/experiment` | 数据库课程实验查询与业务操作 |
 
 ## 数据库说明
@@ -216,6 +255,8 @@ http://localhost:5173
 - `class_record`：会员课程报名记录（`coach_id` 记录会员报名时选择的教练）。
 - `class_coach`：课程与任课教练的多对多关系（一门课可有多位教练）。
 - `class_equipment`：课程与器材的关联关系。
+- `gym_checkin`：会员每日运动打卡记录（每人每天一条）。
+- `business_status`：全站营业状态配置（单行表：营业中 / 已打烊）。
 
 数据库相关补充脚本位于：
 
