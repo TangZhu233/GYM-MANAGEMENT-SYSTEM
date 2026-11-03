@@ -96,6 +96,8 @@ docker compose up -d --build
 - 后端接口：http://localhost:8080
 - MySQL：localhost:3306
 
+> 注意：如果本机已安装并运行 MySQL（占用 3306），Compose 中的 `mysql` 服务会因端口冲突无法启动。请先停止本机 MySQL 服务，或把 `docker-compose.yml` 中的 `"3306:3306"` 改为 `"3307:3306"`（只影响宿主机访问，容器之间仍通过 `mysql:3306` 连接）。
+
 数据库初始化脚本会在 MySQL 容器首次创建时自动执行：
 
 ```text
@@ -118,6 +120,13 @@ docker compose down
 ## 本地开发运行
 
 如果不使用 Docker，也可以分别启动数据库、后端和前端。
+
+### 环境要求
+
+- JDK 17+
+- Maven（或直接使用仓库自带的 Maven Wrapper `mvnw`）
+- Node.js 20.19+ 或 22.12+（Vite 8 要求，低版本启动会报错）
+- MySQL 8
 
 ### 1. 初始化数据库
 
@@ -162,8 +171,11 @@ http://localhost:8080
 ```bash
 D:
 cd D:\GYM-MANAGEMENT-SYSTEM\gym-management-system\source\frontend
+npm install        # 首次运行或依赖变更后执行
 npm run dev
 ```
+
+> Node 版本需为 20.19+ 或 22.12+。本机默认是 Node 16 时，可先执行 `nvm use 22.12.0` 切换，`node -v` 确认无误后再启动。
 
 前端默认运行在：
 
